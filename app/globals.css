@@ -274,3 +274,31 @@ button.guide-card.clickable:hover .guide-cta{color:#7ef0ff}
 .topic-grid button b{font-size:.98rem}
 .topic-grid button p{font-size:.82rem;color:#b9c7e6;line-height:1.45}
 footer p{font-size:.88rem}
+
+/* ===== 홈 화면 정밀 패치: 헤더 재배치·타임라인 아코디언·궤도 슬리밍·스크롤 트리거 ===== */
+
+/* 1-1. 질문창 오버레이: 닫기 우측, 스파크 좌측 */
+.ask-close{left:auto;right:16px}
+.ask-float .ask-spark{right:auto;left:23px}
+
+/* 1-1. 답변 패널 즐겨찾기 별 (헤더 좌측 시작점) */
+.star-button{flex:none;background:none;border:none;color:rgba(255,217,122,.65);font-size:1.15rem;cursor:pointer;padding:.1rem .25rem;line-height:1;transition:transform .2s,color .2s}
+.star-button:hover{transform:scale(1.2);color:#ffd97a}
+.star-button.on{color:#ffd97a;text-shadow:0 0 10px rgba(255,217,122,.8)}
+
+/* 1-2. 타임라인 인라인 아코디언 + 점멸 닷 */
+.mini-timeline .era{display:flex;flex-direction:column}
+.mini-timeline .dot.pulse{animation:dot-pulse 2.4s ease-in-out infinite}
+@keyframes dot-pulse{0%,100%{box-shadow:0 0 0 0 rgba(126,214,255,0)}50%{box-shadow:0 0 8px 2px rgba(126,214,255,.7)}}
+.mini-timeline .era>button:hover b{color:#7ef0ff}
+.era-detail{margin:2px 0 8px 22px;padding:.6rem .75rem;font-size:.78rem;line-height:1.6;color:#cdd9f3;background:rgba(90,130,235,.1);border:1px solid rgba(126,177,255,.22);border-left:2px solid #59d6ff;border-radius:8px;animation:era-in .25s ease-out}
+@keyframes era-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.mini-timeline .era.open .dot{box-shadow:0 0 10px 3px rgba(126,214,255,.8)}
+
+/* 2-1. 궤도 라인 슬리밍 + 아이스 시안 통일 + 그라데이션 광원 */
+.orbit{border-width:1px;border-color:rgba(150,220,255,.22);box-shadow:0 0 4px rgba(126,214,255,.18),0 0 14px rgba(126,214,255,.07),inset 0 0 20px rgba(126,214,255,.04)}
+.planet-ring{border-color:rgba(150,220,255,.16);border-width:1px}
+.flight-line{stroke-width:1.8}
+
+/* 3. 스크롤 트리거: 최상단에서는 천체 정지, 스크롤 시 깨어남 (모션 스위치가 상위 규칙) */
+.space-frozen .planet-ring,.space-frozen .core-glow,.space-frozen .orbit,.space-frozen .planet{animation-play-state:paused!important}

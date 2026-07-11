@@ -171,6 +171,8 @@ const copy = {
     questQuiz: "Test My Knowledge (Quiz)",
     questToolkit: "Real-world Prompt Toolkit",
     robotWorking: "Robot guide is preparing your quest…",
+    starSave: "Save this answer",
+    starSaved: "Saved to favorites",
   },
   ko: {
     tagline: "배우고 · 이해하고 · 미래를 준비하다",
@@ -260,20 +262,31 @@ const copy = {
     questQuiz: "내 실력 퀴즈",
     questToolkit: "실전 프롬프트 툴킷",
     robotWorking: "로봇 가이드가 답을 준비 중…",
+    starSave: "이 답변 저장",
+    starSaved: "즐겨찾기에 저장됨",
   },
 };
 
 const topics = [
-  { id: "history", icon: "⌛", color: "gold", en: "AI History", ko: "AI 역사", enD: "How ideas became intelligent machines.", koD: "생각이 지능형 기계로 발전한 과정입니다." },
-  { id: "foundations", icon: "◈", color: "blue", en: "Foundations", ko: "기초", enD: "Logic, mathematics, data and algorithms.", koD: "논리·수학·데이터·알고리즘의 토대입니다." },
-  { id: "ml", icon: "⌁", color: "cyan", en: "Machine Learning", ko: "머신러닝", enD: "Systems that learn patterns from data.", koD: "데이터에서 패턴을 배우는 시스템입니다." },
-  { id: "deep", icon: "◎", color: "violet", en: "Deep Learning", ko: "딥러닝", enD: "Layered neural networks at scale.", koD: "대규모 다층 신경망을 활용하는 학습입니다." },
-  { id: "gen", icon: "✦", color: "pink", en: "Generative AI", ko: "생성형 AI", enD: "AI that creates text, images and more.", koD: "글·이미지 등 새 콘텐츠를 만드는 AI입니다." },
-  { id: "llm", icon: "Aa", color: "mint", en: "Large Language Models", ko: "대규모 언어 모델", enD: "Models that predict and generate language.", koD: "언어를 예측하고 생성하는 모델입니다." },
-  { id: "agents", icon: "✣", color: "magenta", en: "AI Agents", ko: "AI 에이전트", enD: "Systems that plan, use tools and act.", koD: "계획하고 도구를 사용해 행동하는 시스템입니다." },
-  { id: "current", icon: "◉", color: "green", en: "Current AI", ko: "현재의 AI", enD: "Today’s capabilities and limitations.", koD: "오늘날 AI의 능력과 한계를 살펴봅니다." },
-  { id: "future", icon: "↗", color: "orange", en: "Future AI", ko: "미래의 AI", enD: "Evolving, experimental and speculative paths.", koD: "진화·실험·전망 단계의 미래를 구분합니다." },
-  { id: "ethics", icon: "◇", color: "rose", en: "Ethics & Safety", ko: "윤리와 안전", enD: "Bias, privacy, governance and responsibility.", koD: "편향·개인정보·거버넌스·책임을 다룹니다." },
+  { id: "history", icon: "📜", color: "gold", en: "AI History", ko: "AI 역사", enD: "How ideas became intelligent machines.", koD: "생각이 지능형 기계로 발전한 과정입니다." },
+  { id: "foundations", icon: "📐", color: "blue", en: "Foundations", ko: "기초", enD: "Logic, mathematics, data and algorithms.", koD: "논리·수학·데이터·알고리즘의 토대입니다." },
+  { id: "ml", icon: "📊", color: "cyan", en: "Machine Learning", ko: "머신러닝", enD: "Systems that learn patterns from data.", koD: "데이터에서 패턴을 배우는 시스템입니다." },
+  { id: "deep", icon: "🧠", color: "violet", en: "Deep Learning", ko: "딥러닝", enD: "Layered neural networks at scale.", koD: "대규모 다층 신경망을 활용하는 학습입니다." },
+  { id: "gen", icon: "🎨", color: "pink", en: "Generative AI", ko: "생성형 AI", enD: "AI that creates text, images and more.", koD: "글·이미지 등 새 콘텐츠를 만드는 AI입니다." },
+  { id: "llm", icon: "💬", color: "mint", en: "Large Language Models", ko: "대규모 언어 모델", enD: "Models that predict and generate language.", koD: "언어를 예측하고 생성하는 모델입니다." },
+  { id: "agents", icon: "🤖", color: "magenta", en: "AI Agents", ko: "AI 에이전트", enD: "Systems that plan, use tools and act.", koD: "계획하고 도구를 사용해 행동하는 시스템입니다." },
+  { id: "current", icon: "⚡", color: "green", en: "Current AI", ko: "현재의 AI", enD: "Today’s capabilities and limitations.", koD: "오늘날 AI의 능력과 한계를 살펴봅니다." },
+  { id: "future", icon: "🚀", color: "orange", en: "Future AI", ko: "미래의 AI", enD: "Evolving, experimental and speculative paths.", koD: "진화·실험·전망 단계의 미래를 구분합니다." },
+  { id: "ethics", icon: "🛡️", color: "rose", en: "Ethics & Safety", ko: "윤리와 안전", enD: "Bias, privacy, governance and responsibility.", koD: "편향·개인정보·거버넌스·책임을 다룹니다." },
+];
+
+// 좌측 타임라인 인라인 아코디언용 핵심 지식 (EN/KR)
+const timelineDetails: Array<[string, string]> = [
+  ["Alan Turing asked \"Can machines think?\" and proposed the imitation game — judging intelligence by whether a machine's conversation is indistinguishable from a human's. It framed how we still evaluate AI today.", "앨런 튜링이 \"기계가 생각할 수 있는가?\"라는 질문과 함께 모방 게임을 제안했습니다. 기계의 대화가 사람과 구별되지 않으면 지능으로 본다는 기준으로, 오늘날 AI 평가의 출발점이 되었습니다."],
+  ["At the Dartmouth workshop, John McCarthy coined the term 'Artificial Intelligence'. Researchers believed human intelligence could be precisely described and simulated — the field of AI was born.", "다트머스 워크숍에서 존 매카시가 '인공지능'이라는 용어를 만들었습니다. 인간 지능을 정확히 기술해 기계로 모사할 수 있다는 믿음 아래 AI라는 학문 분야가 탄생했습니다."],
+  ["Rule-based expert systems boomed in industry, then hit their limits — brittle rules, high costs. Funding collapsed into the 'AI winter', teaching the field that hype cycles are real.", "규칙 기반 전문가 시스템이 산업에서 호황을 누렸지만 경직된 규칙과 높은 비용이라는 한계에 부딪혔습니다. 투자가 얼어붙는 'AI 겨울'이 왔고, 과열-침체 사이클의 교훈을 남겼습니다."],
+  ["AlexNet crushed the ImageNet competition using deep neural networks trained on GPUs, halving the error rate. Deep learning went from niche to mainstream overnight.", "AlexNet이 GPU로 학습한 심층 신경망으로 이미지넷 대회를 압도하며 오류율을 절반 가까이 낮췄습니다. 딥러닝이 하룻밤 사이 비주류에서 주류로 올라선 사건입니다."],
+  ["The paper 'Attention Is All You Need' introduced the Transformer — processing context in parallel with attention. It became the foundation of GPT, Claude and every modern LLM.", "'Attention Is All You Need' 논문이 트랜스포머 구조를 제시했습니다. 어텐션으로 맥락을 병렬 처리하는 이 구조가 GPT·Claude 등 모든 현대 LLM의 기반이 되었습니다."],
 ];
 
 const timeline = [
@@ -386,6 +399,12 @@ export default function Home() {
   const [askOpen, setAskOpen] = useState(false);
   // 모션 스위치: 사용자가 우주 애니메이션을 켜고 끌 수 있음 (OS 동작줄이기 설정을 초기값으로 존중)
   const [motionEnabled, setMotionEnabled] = useState(true);
+  // 스크롤 트리거: 최상단에서는 천체 정지, 스크롤 시작(>30px) 시 깨어남
+  const [isScrolled, setIsScrolled] = useState(false);
+  // 좌측 타임라인 인라인 아코디언 (열린 연도 index)
+  const [expandedEra, setExpandedEra] = useState<number | null>(null);
+  // 현재 답변 즐겨찾기 여부
+  const [starred, setStarred] = useState(false);
   // 답변 패널 도킹 모드: 우측 30% 고정 + 본문 좌측 정렬
   const [isDocked, setIsDocked] = useState(false);
   // 로봇 가이드 대시보드: 활성 카드 id("learn-0"/"career-2")와 모듈별 퀘스트 결과
@@ -429,6 +448,14 @@ export default function Home() {
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
   }
+
+  useEffect(() => {
+    // 스크롤 트리거: 30px 이상 스크롤 시 천체 애니메이션 활성화
+    const handleScroll = () => setIsScrolled(window.scrollY > 30);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     // 모션·도킹 선호 복원 (모션 초기값은 OS 동작줄이기 설정 존중, 사용자 저장값이 우선)
@@ -587,6 +614,7 @@ export default function Home() {
       setCitations(data.citations ?? []);
       setCheckedAt(data.checkedAt ?? "");
       setUsedWeb(Boolean(data.usedWeb));
+      setStarred(false);
       setAskOpen(false);
       setPanelOpen(true);
       markStudied(selected.id, level);
@@ -637,6 +665,18 @@ export default function Home() {
     setSection("explore");
     window.scrollTo({ top: 200, behavior: "smooth" });
     void submit(undefined, q);
+  }
+
+  // 현재 답변을 즐겨찾기에 저장/해제 (localStorage, 최근 50개 유지)
+  function toggleStar() {
+    try {
+      const raw = JSON.parse(localStorage.getItem("aiu-starred") ?? "[]") as Array<{ q: string; a: string; at: string }>;
+      const next = starred
+        ? raw.filter(item => item.at !== checkedAt)
+        : [...raw.filter(item => item.at !== checkedAt), { q: question, a: answer, at: checkedAt }].slice(-50);
+      localStorage.setItem("aiu-starred", JSON.stringify(next));
+    } catch { /* 저장 불가 환경 무시 */ }
+    setStarred(!starred);
   }
 
   // 모션 스위치: 사용자 선택을 영구 저장 (OS 설정보다 우선)
@@ -736,7 +776,7 @@ export default function Home() {
   }
 
   return (
-    <main className={`universe-shell${motionEnabled ? "" : " motion-paused"}${isDocked && panelOpen && answer ? " docked-mode" : ""}`}>
+    <main className={`universe-shell${motionEnabled ? "" : " motion-paused"}${isScrolled ? " space-moving" : " space-frozen"}${isDocked && panelOpen && answer ? " docked-mode" : ""}`}>
       <div className="star-field" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div>
       <header className="topbar">
         <button className="brand" onClick={() => setSection("explore")} aria-label="AI Universe home">
@@ -835,6 +875,7 @@ export default function Home() {
         style={!isDocked && panelPos ? { left: panelPos.x, top: panelPos.y, transform: "none" } : undefined}
       >
         <div className="answer-panel-head" onPointerDown={startPanelDrag}>
+          <button type="button" className={starred ? "star-button on" : "star-button"} aria-pressed={starred} aria-label={starred ? t.starSaved : t.starSave} title={starred ? t.starSaved : t.starSave} onClick={toggleStar}>{starred ? "★" : "☆"}</button>
           <b>⌁ {t.guide}</b>
           <span className={usedWeb ? "web-badge" : "kb-badge"}>{usedWeb ? `✓ ${t.webChecked}` : `✓ ${t.knowledgeChecked}`}</span>
           {!isDocked && <small className="panel-hint">{t.panelHint}</small>}
@@ -861,7 +902,10 @@ export default function Home() {
           <aside className="timeline-rail glass-card">
             <div className="panel-kicker">{t.history}</div><p>{t.historySub}</p>
             <div className="mini-timeline">
-              {timeline.slice(0,5).map((item, i) => <button key={item[0]} onClick={() => setSection("timeline")}><i className={`dot d${i}`}/><span><b>{item[0]}</b><small>{lang === "en" ? item[1] : item[2]}</small></span></button>)}
+              {timeline.slice(0,5).map((item, i) => <div key={item[0]} className={expandedEra === i ? "era open" : "era"}>
+                <button onClick={() => setExpandedEra(expandedEra === i ? null : i)} aria-expanded={expandedEra === i}><i className={`dot d${i} pulse`}/><span><b>{item[0]}</b><small>{lang === "en" ? item[1] : item[2]}</small></span></button>
+                {expandedEra === i && <p className="era-detail">{lang === "en" ? timelineDetails[i][0] : timelineDetails[i][1]}</p>}
+              </div>)}
             </div>
             <button className="soft-button" onClick={() => setSection("timeline")}>{lang === "en" ? "View full timeline" : "전체 역사 보기"} <span>→</span></button>
           </aside>
