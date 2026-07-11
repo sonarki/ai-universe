@@ -332,3 +332,30 @@ html,body{width:100vw;overflow-x:hidden;font-size:14px}
 .answer-panel .panel-hint{display:none}
 .universe-shell.docked-mode{padding-right:0}
 }
+
+/* 로봇 가이드 아바타 (실사 3D 이미지 + 부유 애니메이션) */
+.robot-img{width:170px;height:auto;align-self:center;border-radius:18px;box-shadow:0 10px 34px rgba(56,120,255,.35);animation:robot-float 4.2s ease-in-out infinite;margin:6px 0}
+.robot-img.mini{width:118px;margin:0}
+@keyframes robot-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+/* 모바일 세로 길이 압축 (중복·부가 요소 정리) */
+@media (max-width:900px){
+/* 주제 카드 그리드는 지도 노드와 중복 → 모바일에서 숨김 (진행률 게이지는 유지) */
+.quick-section .topic-grid{display:none}
+/* 신뢰 안내 카드 숨김 (공간 절약) */
+.trust-card{display:none}
+/* 타임라인을 가로 스크롤 스트립으로 */
+.mini-timeline{display:flex;flex-direction:row;overflow-x:auto;gap:8px;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+.mini-timeline .era{flex:0 0 170px}
+.era-detail{margin-left:0;font-size:.76rem}
+/* 여백 압축 */
+.explorer{gap:12px}
+.hero-copy{padding-bottom:6px}
+.robot-img{width:120px}
+.robot-img.mini{width:96px}
+}
+
+/* 모바일에서 AI 가이드 카드 표시 (칩 삭제 후 유일한 질문 진입점) */
+@media (max-width:900px){
+.guide-column{display:flex;flex-direction:column}
+}

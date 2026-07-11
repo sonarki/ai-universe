@@ -749,7 +749,7 @@ export default function Home() {
     const name = moduleName(activeModuleId);
     return (
       <div className="robot-guide-dashboard glass-card">
-        <div className="robot-avatar"><div className="bot mini"><span className="antenna a1"/><span className="antenna a2"/><b>⌁</b></div></div>
+        <div className="robot-avatar"><img src="/robot-uni.png" alt="" className="robot-img mini"/></div>
         <div className="robot-body">
           <div className="robot-title-row"><b>{t.robotTitle}</b><span>· {name}</span><button type="button" className="robot-close" aria-label={t.close} onClick={() => setActiveModuleId(null)}>×</button></div>
           <p className="robot-sub">{t.robotSub}</p>
@@ -925,7 +925,7 @@ export default function Home() {
           </div>
 
           <aside className="guide-column">
-            <button type="button" className="guide-card glass-card clickable" onClick={() => setAskOpen(true)} aria-label={t.question}><div><span className="status-dot"/>{t.guide}<em>Beta</em></div><div className="bot"><span className="antenna a1"/><span className="antenna a2"/><b>⌁</b></div><p>{t.guideText}</p><span className="guide-cta">✦ {t.askChip} →</span></button>
+            <button type="button" className="guide-card glass-card clickable" onClick={() => setAskOpen(true)} aria-label={t.question}><div><span className="status-dot"/>{t.guide}<em>Beta</em></div><img src="/robot-uni.png" alt="" className="robot-img"/><p>{t.guideText}</p><span className="guide-cta">✦ {t.askChip} →</span></button>
             <div className="trust-card glass-card"><span>✓</span><div><b>{lang === "en" ? "Evidence-aware" : "근거 중심 정보"}</b><p>{t.noNews}</p></div></div>
           </aside>
         </section>
