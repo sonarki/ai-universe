@@ -232,3 +232,45 @@ button.guide-card.clickable{width:100%;text-align:inherit;font:inherit;color:inh
 button.guide-card.clickable:hover{border-color:#59d6ff;box-shadow:0 0 22px rgba(94,168,255,.35);transform:translateY(-2px)}
 .guide-cta{margin-top:.7rem;font-size:.82rem;font-weight:700;color:#8fb7ff;transition:color .25s}
 button.guide-card.clickable:hover .guide-cta{color:#7ef0ff}
+
+/* ===== 홈 화면 하이엔드 리디자인 (레퍼런스 반영: 유리 서클 + 선명한 타이포) ===== */
+
+/* 1. 유리질 노드 서클 (전역 — 지도·카드·선택박스 공통) */
+.node-icon{background:linear-gradient(150deg,rgba(255,255,255,.17),rgba(255,255,255,.05) 42%,rgba(96,126,226,.13));backdrop-filter:blur(6px);border:1.5px solid rgba(255,255,255,.42);box-shadow:0 0 16px color-mix(in srgb,currentColor 55%,transparent),inset 0 1px 10px rgba(255,255,255,.3),inset 0 -8px 14px color-mix(in srgb,currentColor 24%,transparent)}
+
+/* 2. 지식지도 노드: 유리 원 위 + 큰 라벨 아래 (데스크톱 전용, 모바일 리스트 레이아웃 보존) */
+@media (min-width:901px){
+.topic-node{display:flex;flex-direction:column;align-items:center;text-align:center;width:134px;gap:9px;padding:9px 6px;border-radius:20px}
+.topic-node .node-icon{width:58px;height:58px;font-size:21px}
+.topic-node b{font-size:15px;line-height:1.28;color:#fff;text-shadow:0 2px 10px rgba(2,8,30,.9);letter-spacing:-.01em;align-self:center}
+.topic-node small{display:none}
+.topic-node:hover{background:rgba(83,110,255,.12)}
+.topic-node.selected{background:rgba(73,96,215,.22)}
+}
+
+/* 3. 타이포 전면 강화 (크고 선명하게) */
+.hero-copy h1{font-size:clamp(34px,3.4vw,50px);line-height:1.16;letter-spacing:-.022em}
+.hero-copy div{font-size:1.03rem;color:rgba(224,233,255,.8);max-width:720px;margin:0 auto}
+.hero-copy p{font-size:.84rem;letter-spacing:.18em;color:#9db9ff}
+.map-heading span{font-size:.8rem;letter-spacing:.18em}
+.map-heading b{font-size:1.08rem;color:#eaf1ff}
+.panel-kicker{font-size:1.02rem;color:#eef4ff}
+.timeline-rail>p{font-size:.86rem;color:#b9c8e8}
+.mini-timeline b{font-size:.95rem}
+.mini-timeline small{font-size:.8rem;color:#c2d1ef;line-height:1.45}
+.soft-button{font-size:.9rem}
+.guide-card p{font-size:.93rem;color:#dbe5fb;line-height:1.55}
+.trust-card b{font-size:.96rem}
+.trust-card p{font-size:.85rem;color:#c2d1ef;line-height:1.5}
+.selected-strip b{font-size:1.18rem}
+.selected-strip small{font-size:.78rem;letter-spacing:.14em}
+.selected-strip p{font-size:.9rem;color:#c6d4f2}
+.selected-strip .level span{font-size:.86rem}
+.selected-strip .level button{font-size:.86rem}
+.nav button{font-size:.95rem}
+.section-head h2{font-size:1.65rem;letter-spacing:-.02em}
+.section-head span{letter-spacing:.18em}
+.section-head p{font-size:.92rem;color:#b9c8e8}
+.topic-grid button b{font-size:.98rem}
+.topic-grid button p{font-size:.82rem;color:#b9c7e6;line-height:1.45}
+footer p{font-size:.88rem}
