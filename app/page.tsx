@@ -123,6 +123,29 @@ const copy = {
     progressTitle: "Learning progress",
     progressHint: "Ask about every topic at all three levels to reach 100%.",
     progressSteps: "steps completed",
+    login: "Log in",
+    signup: "Sign up",
+    logout: "Log out",
+    authTitleLogin: "Welcome back",
+    authTitleSignup: "Create your account",
+    authHint: "Save your learning progress and continue on any device.",
+    email: "Email",
+    password: "Password (8+ characters)",
+    nickname: "Name or nickname",
+    authSubmitLogin: "Log in",
+    authSubmitSignup: "Sign up",
+    authToSignup: "New here? Sign up",
+    authToLogin: "Already have an account? Log in",
+    authErrors: {
+      invalid_email: "Please enter a valid email address.",
+      weak_password: "Password must be at least 8 characters.",
+      name_required: "Please enter a name or nickname.",
+      email_taken: "This email is already registered. Try logging in.",
+      bad_credentials: "Email or password is incorrect.",
+      not_configured: "Account storage is not connected yet. Please try again later.",
+      generic: "Something went wrong. Please try again.",
+    } as Record<string, string>,
+    synced: "Progress synced to your account",
   },
   ko: {
     tagline: "배우고 · 이해하고 · 미래를 준비하다",
@@ -164,6 +187,29 @@ const copy = {
     progressTitle: "학습 진행률",
     progressHint: "모든 주제를 세 가지 난이도로 공부하면 100%가 됩니다.",
     progressSteps: "단계 완료",
+    login: "로그인",
+    signup: "회원가입",
+    logout: "로그아웃",
+    authTitleLogin: "다시 만나 반가워요",
+    authTitleSignup: "계정 만들기",
+    authHint: "학습 진행률을 저장하고 어떤 기기에서든 이어서 공부하세요.",
+    email: "이메일",
+    password: "비밀번호 (8자 이상)",
+    nickname: "이름 또는 닉네임",
+    authSubmitLogin: "로그인",
+    authSubmitSignup: "가입하기",
+    authToSignup: "처음이신가요? 회원가입",
+    authToLogin: "이미 계정이 있나요? 로그인",
+    authErrors: {
+      invalid_email: "올바른 이메일 주소를 입력해 주세요.",
+      weak_password: "비밀번호는 8자 이상이어야 합니다.",
+      name_required: "이름 또는 닉네임을 입력해 주세요.",
+      email_taken: "이미 가입된 이메일입니다. 로그인해 보세요.",
+      bad_credentials: "이메일 또는 비밀번호가 올바르지 않습니다.",
+      not_configured: "계정 저장소가 아직 연결되지 않았습니다. 잠시 후 다시 시도해 주세요.",
+      generic: "문제가 발생했습니다. 다시 시도해 주세요.",
+    } as Record<string, string>,
+    synced: "진행률이 계정에 저장됩니다",
   },
 };
 
@@ -219,23 +265,110 @@ export default function Home() {
   const [menu, setMenu] = useState(false);
   // 학습 진행률: "주제id:난이도" 단위로 완료를 기록 (10주제 × 3난이도 = 30단계 = 100%)
   const [studyProgress, setStudyProgress] = useState<Record<string, boolean>>({});
+  // 회원 계정: 로그인하면 진행률이 서버에 동기화되어 기기 간 유지
+  const [user, setUser] = useState<{ email: string; name: string } | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authName, setAuthName] = useState("");
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    let localSteps: Record<string, boolean> = {};
     try {
       const saved = localStorage.getItem("aiu-progress");
-      if (saved) setStudyProgress(JSON.parse(saved) as Record<string, boolean>);
+      if (saved) localSteps = JSON.parse(saved) as Record<string, boolean>;
     } catch { /* 저장된 진행률이 손상된 경우 무시 */ }
+    setStudyProgress(localSteps);
+    // 로그인 세션이 있으면 서버 진행률과 병합
+    void fetch("/api/auth/me")
+      .then(res => res.ok ? res.json() : null)
+      .then((data: { user?: { email: string; name: string } | null; progress?: string[] } | null) => {
+        if (!data?.user) return;
+        setUser(data.user);
+        mergeServerProgress(localSteps, data.progress ?? []);
+      })
+      .catch(() => { /* 오프라인 등에서는 로컬 진행률만 사용 */ });
   }, []);
 
+  // 로컬·서버 진행률을 합집합으로 병합하고, 서버에 없는 단계는 올려서 맞춤
+  function mergeServerProgress(localSteps: Record<string, boolean>, serverSteps: string[]) {
+    const merged: Record<string, boolean> = { ...localSteps };
+    for (const step of serverSteps) merged[step] = true;
+    setStudyProgress(merged);
+    try { localStorage.setItem("aiu-progress", JSON.stringify(merged)); } catch { /* 무시 */ }
+    const missingOnServer = Object.keys(localSteps).filter(step => !serverSteps.includes(step));
+    if (missingOnServer.length > 0) {
+      void fetch("/api/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ steps: missingOnServer }),
+      }).catch(() => { /* 다음 방문 때 재시도됨 */ });
+    }
+  }
+
   function markStudied(topicId: string, levelIndex: number) {
+    const stepKey = `${topicId}:${levelIndex}`;
     setStudyProgress(prev => {
-      const stepKey = `${topicId}:${levelIndex}`;
       if (prev[stepKey]) return prev;
       const next = { ...prev, [stepKey]: true };
       try { localStorage.setItem("aiu-progress", JSON.stringify(next)); } catch { /* 저장 불가 환경 무시 */ }
       return next;
     });
+    if (user) {
+      void fetch("/api/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ step: stepKey }),
+      }).catch(() => { /* 다음 병합 때 재동기화 */ });
+    }
+  }
+
+  async function submitAuth(e: FormEvent) {
+    e.preventDefault();
+    if (authLoading) return;
+    setAuthError("");
+    setAuthLoading(true);
+    try {
+      const endpoint = authMode === "signup" ? "/api/auth/signup" : "/api/auth/login";
+      const payload = authMode === "signup"
+        ? { email: authEmail, password: authPassword, name: authName }
+        : { email: authEmail, password: authPassword };
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json() as { user?: { email: string; name: string }; error?: string };
+      if (!response.ok || !data.user) {
+        const code = data.error && t.authErrors[data.error] ? data.error : response.status === 503 ? "not_configured" : "generic";
+        setAuthError(t.authErrors[code]);
+        return;
+      }
+      setUser(data.user);
+      setAuthOpen(false);
+      setAuthPassword("");
+      // 로그인 직후 서버 진행률을 받아 로컬과 양방향 병합
+      try {
+        const progressRes = await fetch("/api/progress");
+        const progressData = progressRes.ok ? await progressRes.json() as { progress?: string[] } : null;
+        mergeServerProgress(studyProgress, progressData?.progress ?? []);
+      } catch {
+        mergeServerProgress(studyProgress, []);
+      }
+    } catch {
+      setAuthError(t.authErrors.generic);
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
+  async function logout() {
+    try { await fetch("/api/auth/logout", { method: "POST" }); } catch { /* 쿠키 만료로도 정리됨 */ }
+    setUser(null);
   }
 
   const totalSteps = topics.length * 3;
@@ -333,7 +466,28 @@ export default function Home() {
           <span>/</span>
           <button className={lang === "ko" ? "active" : ""} onClick={() => changeLanguage("ko")}>KR</button>
         </div>
+        <div className="account-area">
+          {user
+            ? <><span className="account-name" title={user.email}>✦ {user.name}</span><button className="account-button" onClick={() => void logout()}>{t.logout}</button></>
+            : <button className="account-button primary" onClick={() => {setAuthMode("signup"); setAuthError(""); setAuthOpen(true);}}>{t.signup}</button>}
+        </div>
       </header>
+
+      {authOpen && <div className="auth-overlay" role="dialog" aria-modal="true" aria-label={authMode === "signup" ? t.authTitleSignup : t.authTitleLogin} onClick={e => { if (e.target === e.currentTarget) setAuthOpen(false); }}>
+        <form className="auth-card glass-card" onSubmit={submitAuth}>
+          <button type="button" className="auth-close" aria-label={t.close} onClick={() => setAuthOpen(false)}>×</button>
+          <h2>{authMode === "signup" ? t.authTitleSignup : t.authTitleLogin}</h2>
+          <p className="auth-hint">{t.authHint}</p>
+          {authMode === "signup" && <input type="text" value={authName} onChange={e => setAuthName(e.target.value)} placeholder={t.nickname} maxLength={40} autoComplete="nickname" required/>}
+          <input type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} placeholder={t.email} maxLength={254} autoComplete="email" required/>
+          <input type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} placeholder={t.password} minLength={8} maxLength={200} autoComplete={authMode === "signup" ? "new-password" : "current-password"} required/>
+          {authError && <p className="auth-error" role="alert">{authError}</p>}
+          <button type="submit" className="primary-button" disabled={authLoading}>{authLoading ? "···" : authMode === "signup" ? t.authSubmitSignup : t.authSubmitLogin}</button>
+          <button type="button" className="auth-switch" onClick={() => {setAuthMode(authMode === "signup" ? "login" : "signup"); setAuthError("");}}>
+            {authMode === "signup" ? t.authToLogin : t.authToSignup}
+          </button>
+        </form>
+      </div>}
 
       {activeContent === "explore" && <>
         <section className="hero-copy">
@@ -398,7 +552,7 @@ export default function Home() {
             <div className="progress-track" role="progressbar" aria-valuenow={progressPercent} aria-valuemin={0} aria-valuemax={100} aria-label={t.progressTitle}>
               <span className="progress-fill" style={{width: `${progressPercent}%`}}/>
             </div>
-            <small>{doneSteps} / {totalSteps} {t.progressSteps}</small>
+            <small>{doneSteps} / {totalSteps} {t.progressSteps}{user && <em className="sync-note"> · ✓ {t.synced}</em>}</small>
           </div>
           <div className="topic-grid">{topics.map(item => <button key={item.id} onClick={() => {setSelected(item); window.scrollTo({top:300,behavior:"smooth"});}}><span className={`node-icon ${item.color}`}>{item.icon}</span><div><b>{title(item)}</b><p>{description(item)}</p><span className="level-dots">{[0,1,2].map(levelIndex => <i key={levelIndex} className={studyProgress[`${item.id}:${levelIndex}`] ? "done" : ""} title={t.levels[levelIndex]}/>)}</span></div><i>↗</i></button>)}</div>
         </section>
