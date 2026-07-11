@@ -228,12 +228,12 @@ const topics = [
   { id: "foundations", icon: "◈", color: "blue", en: "Foundations", ko: "기초", enD: "Logic, mathematics, data and algorithms.", koD: "논리·수학·데이터·알고리즘의 토대입니다." },
   { id: "ml", icon: "⌁", color: "cyan", en: "Machine Learning", ko: "머신러닝", enD: "Systems that learn patterns from data.", koD: "데이터에서 패턴을 배우는 시스템입니다." },
   { id: "deep", icon: "◎", color: "violet", en: "Deep Learning", ko: "딥러닝", enD: "Layered neural networks at scale.", koD: "대규모 다층 신경망을 활용하는 학습입니다." },
-  { id: "gen", icon: "✦", color: "cyan", en: "Generative AI", ko: "생성형 AI", enD: "AI that creates text, images and more.", koD: "글·이미지 등 새 콘텐츠를 만드는 AI입니다." },
-  { id: "llm", icon: "Aa", color: "blue", en: "Large Language Models", ko: "대규모 언어 모델", enD: "Models that predict and generate language.", koD: "언어를 예측하고 생성하는 모델입니다." },
-  { id: "agents", icon: "✣", color: "violet", en: "AI Agents", ko: "AI 에이전트", enD: "Systems that plan, use tools and act.", koD: "계획하고 도구를 사용해 행동하는 시스템입니다." },
+  { id: "gen", icon: "✦", color: "pink", en: "Generative AI", ko: "생성형 AI", enD: "AI that creates text, images and more.", koD: "글·이미지 등 새 콘텐츠를 만드는 AI입니다." },
+  { id: "llm", icon: "Aa", color: "mint", en: "Large Language Models", ko: "대규모 언어 모델", enD: "Models that predict and generate language.", koD: "언어를 예측하고 생성하는 모델입니다." },
+  { id: "agents", icon: "✣", color: "magenta", en: "AI Agents", ko: "AI 에이전트", enD: "Systems that plan, use tools and act.", koD: "계획하고 도구를 사용해 행동하는 시스템입니다." },
   { id: "current", icon: "◉", color: "green", en: "Current AI", ko: "현재의 AI", enD: "Today’s capabilities and limitations.", koD: "오늘날 AI의 능력과 한계를 살펴봅니다." },
   { id: "future", icon: "↗", color: "orange", en: "Future AI", ko: "미래의 AI", enD: "Evolving, experimental and speculative paths.", koD: "진화·실험·전망 단계의 미래를 구분합니다." },
-  { id: "ethics", icon: "◇", color: "gold", en: "Ethics & Safety", ko: "윤리와 안전", enD: "Bias, privacy, governance and responsibility.", koD: "편향·개인정보·거버넌스·책임을 다룹니다." },
+  { id: "ethics", icon: "◇", color: "rose", en: "Ethics & Safety", ko: "윤리와 안전", enD: "Bias, privacy, governance and responsibility.", koD: "편향·개인정보·거버넌스·책임을 다룹니다." },
 ];
 
 const timeline = [

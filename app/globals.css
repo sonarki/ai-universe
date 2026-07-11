@@ -151,3 +151,9 @@ footer{position:relative;z-index:2;border-top:1px solid rgba(127,177,255,.13);mi
 @keyframes orbit-spin-b{from{transform:translate(-50%,-50%) rotate(14deg)}to{transform:translate(-50%,-50%) rotate(-346deg)}}
 @keyframes orbit-spin-c{from{transform:translate(-50%,-50%) rotate(68deg)}to{transform:translate(-50%,-50%) rotate(428deg)}}
 @media (max-width:900px){.celestial{display:none}}
+
+/* 카테고리 원별 고유 발광색 (10개 전부 서로 다름) */
+.node-icon.pink{color:#ff8ad8}
+.node-icon.mint{color:#6df2c4}
+.node-icon.magenta{color:#d18aff}
+.node-icon.rose{color:#ff8a8a}
