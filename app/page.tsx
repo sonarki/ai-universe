@@ -149,6 +149,8 @@ const copy = {
     expand: "Expand",
     panelHint: "Drag to move · resize from the corner",
     askedLabel: "Question",
+    askChip: "Ask AI",
+    reopenAnswer: "View last answer",
   },
   ko: {
     tagline: "배우고 · 이해하고 · 미래를 준비하다",
@@ -216,6 +218,8 @@ const copy = {
     expand: "크게 보기",
     panelHint: "머리글을 끌어 이동 · 모서리를 끌어 크기 조절",
     askedLabel: "질문",
+    askChip: "질문하기",
+    reopenAnswer: "지난 답변 보기",
   },
 };
 
@@ -280,6 +284,8 @@ export default function Home() {
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authName, setAuthName] = useState("");
+  // 질문창: 평소엔 우측 상단 칩으로 접힘, 누르면 중앙에 펼쳐짐 (모든 페이지 공통)
+  const [askOpen, setAskOpen] = useState(false);
   // 확장 답변 패널: 기본은 화면 중앙, 사용자가 드래그로 이동·모서리로 크기 조절
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelPos, setPanelPos] = useState<{ x: number; y: number } | null>(null);
@@ -427,6 +433,7 @@ export default function Home() {
     setCitations([]);
     setCheckedAt("");
     setAskError("");
+    setAskOpen(true);
     setLoading(true);
     setLoadingStep(0);
     const controller = new AbortController();
@@ -456,6 +463,7 @@ export default function Home() {
       setCitations(data.citations ?? []);
       setCheckedAt(data.checkedAt ?? "");
       setUsedWeb(Boolean(data.usedWeb));
+      setAskOpen(false);
       setPanelOpen(true);
       markStudied(selected.id, level);
     } catch (error) {
@@ -529,6 +537,23 @@ export default function Home() {
         </form>
       </div>}
 
+      {!askOpen && <button className="ask-chip" onClick={() => setAskOpen(true)} aria-label={t.question}>
+        <span className="ask-chip-inner"><i>✦</i>{t.askChip}</span>
+      </button>}
+
+      {askOpen && <div className="ask-overlay" role="dialog" aria-modal="false" aria-label={t.question}>
+        <form className="ask-float glass-card" onSubmit={submit}>
+          <button type="button" className="ask-close" aria-label={t.close} onClick={() => setAskOpen(false)}>✕</button>
+          <span className="ask-spark">✦</span>
+          <h2>{t.question}</h2>
+          <div className="question-box"><input value={question} onChange={e => setQuestion(e.target.value)} placeholder={t.placeholder} aria-label={t.placeholder} maxLength={1200} disabled={loading} autoFocus/><button aria-label="Send question" disabled={loading}>{loading ? "···" : "➤"}</button></div>
+          <div className="ask-actions"><button type="button" onClick={() => {setAskOpen(false); setSection("explore"); window.setTimeout(() => document.getElementById("topic-grid")?.scrollIntoView({behavior:"smooth"}), 80);}}>⌘ {t.browse}</button><span>or</span><button type="button" onClick={() => chooseQuestion(t.guided[0])}>◇ {t.suggestion}</button></div>
+          {loading && <div className="search-progress" role="status"><span className="search-spinner"/><b>{t.searching[loadingStep]}</b><button type="button" onClick={() => abortRef.current?.abort()}>{t.cancel}</button></div>}
+          {askError && <div className="ask-error" role="alert"><span>!</span><p>{askError}</p><button type="button" onClick={() => void submit()}>{lang === "en" ? "Try again" : "다시 시도"}</button></div>}
+          {answer && !panelOpen && !loading && <button type="button" className="expand-button reopen" onClick={() => {setPanelOpen(true); setAskOpen(false);}}>⤢ {t.reopenAnswer}</button>}
+        </form>
+      </div>}
+
       {panelOpen && answer && <div
         className="answer-panel glass-card"
         ref={panelRef}
@@ -575,20 +600,6 @@ export default function Home() {
                 <span className={`node-icon ${item.color}`}>{item.icon}</span><b>{title(item)}</b><small>{description(item)}</small>
               </button>)}
             </div>
-            <form className="ask-card glass-card" onSubmit={submit}>
-              <span className="ask-spark">✦</span>
-              <h2>{t.question}</h2>
-              <div className="question-box"><input value={question} onChange={e => setQuestion(e.target.value)} placeholder={t.placeholder} aria-label={t.placeholder} maxLength={1200} disabled={loading}/><button aria-label="Send question" disabled={loading}>{loading ? "···" : "➤"}</button></div>
-              <div className="ask-actions"><button type="button" onClick={() => document.getElementById("topic-grid")?.scrollIntoView({behavior:"smooth"})}>⌘ {t.browse}</button><span>or</span><button type="button" onClick={() => chooseQuestion(t.guided[0])}>◇ {t.suggestion}</button></div>
-              {loading && <div className="search-progress" role="status"><span className="search-spinner"/><b>{t.searching[loadingStep]}</b><button type="button" onClick={() => abortRef.current?.abort()}>{t.cancel}</button></div>}
-              {askError && <div className="ask-error" role="alert"><span>!</span><p>{askError}</p><button type="button" onClick={() => void submit()}>{lang === "en" ? "Try again" : "다시 시도"}</button></div>}
-              {answer && !panelOpen && <div className="answer-card live-answer" role="status">
-                <div className="answer-meta"><b>{t.answerIntro}</b><span className={usedWeb ? "web-badge" : "kb-badge"}>{usedWeb ? `✓ ${t.webChecked}` : `✓ ${t.knowledgeChecked}`}</span><button type="button" className="expand-button" onClick={() => setPanelOpen(true)}>⤢ {t.expand}</button></div>
-                <MarkdownAnswer text={answer}/>
-                {checkedAt && <small>{t.checked}: {new Date(checkedAt).toLocaleString(lang === "ko" ? "ko-KR" : "en-US")}</small>}
-                {citations.length > 0 && <div className="source-list"><strong>{t.sources}</strong>{citations.map((source, i) => <a href={source.url} target="_blank" rel="noreferrer" key={source.url}><span>{i + 1}</span><div><b>{source.title}</b><small>{new URL(source.url).hostname}</small></div><i>↗</i></a>)}</div>}
-              </div>}
-            </form>
           </div>
 
           <aside className="guide-column">

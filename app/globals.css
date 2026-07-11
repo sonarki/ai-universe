@@ -89,3 +89,22 @@ footer{position:relative;z-index:2;border-top:1px solid rgba(127,177,255,.13);mi
 .expand-button{margin-left:auto;background:rgba(120,150,255,.12);border:1px solid rgba(140,165,255,.28);color:#c9d9ff;border-radius:999px;padding:.28rem .8rem;font-size:.78rem;cursor:pointer;white-space:nowrap;transition:all .25s}
 .expand-button:hover{background:rgba(120,150,255,.22)}
 @media (max-width:640px){.answer-panel{width:96vw;height:78vh;top:4vh}.answer-panel-head .panel-hint{display:none}}
+
+/* 질문 칩 (우측 상단 고정, 천천히 반짝이는 외곽선) */
+.ask-chip{position:fixed;top:82px;right:20px;z-index:52;border:none;padding:2px;border-radius:999px;cursor:pointer;background:linear-gradient(115deg,#4f83ff,#7ef0ff,#a78bff,#59d6ff,#4f83ff);background-size:320% 100%;animation:chip-sheen 6s linear infinite,chip-glow 4.5s ease-in-out infinite;transition:transform .25s}
+.ask-chip:hover{transform:scale(1.06)}
+.ask-chip-inner{display:flex;align-items:center;gap:.45rem;padding:.6rem 1.15rem;border-radius:999px;background:rgba(8,17,42,.94);color:#eef4ff;font-size:.9rem;font-weight:700;white-space:nowrap}
+.ask-chip-inner i{font-style:normal;color:#ffd97a;animation:spark-pulse 2.6s ease-in-out infinite}
+@keyframes chip-sheen{from{background-position:0% 0}to{background-position:320% 0}}
+@keyframes chip-glow{0%,100%{box-shadow:0 0 12px rgba(94,168,255,.35)}50%{box-shadow:0 0 26px rgba(126,240,255,.65)}}
+@keyframes spark-pulse{0%,100%{opacity:.65}50%{opacity:1}}
+
+/* 중앙 질문 오버레이 */
+.ask-overlay{position:fixed;inset:0;z-index:58;display:flex;align-items:flex-start;justify-content:center;padding:12vh 1rem 1rem;background:rgba(4,10,28,.55);backdrop-filter:blur(5px)}
+.ask-float{position:relative;width:min(620px,94vw);border-radius:26px;padding:26px 26px 22px;text-align:center;border:1px solid rgba(71,163,255,.55);box-shadow:0 22px 80px rgba(0,0,0,.5),0 0 45px rgba(56,139,255,.16);background:rgba(9,18,44,.95)}
+.ask-float h2{margin:0 0 16px;font-size:clamp(22px,2.2vw,30px);letter-spacing:-.03em;color:#eef4ff}
+.ask-float .ask-spark{position:absolute;right:23px;top:17px}
+.ask-close{position:absolute;top:12px;left:16px;background:none;border:none;color:rgba(214,226,255,.6);font-size:1.15rem;cursor:pointer;line-height:1;padding:.2rem}
+.ask-close:hover{color:#fff}
+.expand-button.reopen{margin:14px auto 0;display:inline-flex}
+@media (max-width:640px){.ask-chip{top:70px;right:12px}.ask-chip-inner{padding:.5rem .9rem;font-size:.84rem}.ask-overlay{padding-top:9vh}}
