@@ -286,6 +286,11 @@ export default function Home() {
   const [authName, setAuthName] = useState("");
   // 질문창: 평소엔 우측 상단 칩으로 접힘, 누르면 중앙에 펼쳐짐 (모든 페이지 공통)
   const [askOpen, setAskOpen] = useState(false);
+  // 지식지도 노드 클릭 시: 혜성이 선을 그으며 선택 박스로 날아가고, 도착하면 박스가 번쩍임
+  const [flight, setFlight] = useState<{ x1: number; y1: number; x2: number; y2: number; id: number } | null>(null);
+  const [stripFlash, setStripFlash] = useState(false);
+  const stripRef = useRef<HTMLElement | null>(null);
+  const flightTimers = useRef<number[]>([]);
   // 확장 답변 패널: 기본은 화면 중앙, 사용자가 드래그로 이동·모서리로 크기 조절
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelPos, setPanelPos] = useState<{ x: number; y: number } | null>(null);
@@ -480,6 +485,35 @@ export default function Home() {
     void submit(undefined, q);
   }
 
+  // 지식지도 노드 선택: 혜성 비행 이펙트 + 선택 박스 번쩍임
+  function selectTopic(item: typeof topics[number], sourceEl: HTMLElement | null) {
+    setSelected(item);
+    flightTimers.current.forEach(timer => window.clearTimeout(timer));
+    flightTimers.current = [];
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const stripEl = stripRef.current;
+    if (!reduceMotion && sourceEl && stripEl) {
+      const from = sourceEl.getBoundingClientRect();
+      const to = stripEl.getBoundingClientRect();
+      setFlight({
+        x1: from.left + from.width / 2,
+        y1: from.top + from.height / 2,
+        x2: to.left + to.width / 2,
+        y2: to.top + 6,
+        id: Date.now(),
+      });
+      setStripFlash(false);
+      flightTimers.current.push(window.setTimeout(() => setStripFlash(true), 680));
+      flightTimers.current.push(window.setTimeout(() => setFlight(null), 1500));
+      flightTimers.current.push(window.setTimeout(() => setStripFlash(false), 2100));
+    } else {
+      // 모션 축소 환경에서는 비행 없이 번쩍임만
+      setStripFlash(false);
+      flightTimers.current.push(window.setTimeout(() => setStripFlash(true), 30));
+      flightTimers.current.push(window.setTimeout(() => setStripFlash(false), 1400));
+    }
+  }
+
   // 학습·직무·자료 페이지 버튼에서 탐색 화면으로 이동해 AI 가이드에게 질문
   function askFromPage(q: string) {
     setSection("explore");
@@ -536,6 +570,29 @@ export default function Home() {
           </button>
         </form>
       </div>}
+
+      {flight && <svg className="flight-layer" key={flight.id} aria-hidden="true">
+        <defs>
+          <linearGradient id="flight-grad" gradientUnits="userSpaceOnUse" x1={flight.x1} y1={flight.y1} x2={flight.x2} y2={flight.y2}>
+            <stop offset="0%" stopColor="#4f83ff" stopOpacity="0"/>
+            <stop offset="45%" stopColor="#59d6ff"/>
+            <stop offset="100%" stopColor="#c2f1ff"/>
+          </linearGradient>
+        </defs>
+        <line
+          className="flight-line"
+          x1={flight.x1} y1={flight.y1} x2={flight.x2} y2={flight.y2}
+          style={{
+            strokeDasharray: Math.hypot(flight.x2 - flight.x1, flight.y2 - flight.y1),
+            strokeDashoffset: Math.hypot(flight.x2 - flight.x1, flight.y2 - flight.y1),
+          }}
+        />
+        <g className="flight-comet">
+          <circle r="5"/>
+          <circle r="2.2" className="flight-comet-core"/>
+          <animateMotion dur="0.68s" fill="freeze" calcMode="spline" keySplines="0.3 0 0.7 1" keyTimes="0;1" path={`M ${flight.x1} ${flight.y1} L ${flight.x2} ${flight.y2}`}/>
+        </g>
+      </svg>}
 
       {!askOpen && <button className="ask-chip" onClick={() => setAskOpen(true)} aria-label={t.question}>
         <span className="ask-chip-inner"><i>✦</i>{t.askChip}</span>
@@ -596,7 +653,7 @@ export default function Home() {
             <div className="map-heading"><span>{t.mapLabel}</span><b>{t.mapTitle}</b></div>
             <div className="orbit orbit-a"/><div className="orbit orbit-b"/><div className="orbit orbit-c"/>
             <div className="topic-orbit">
-              {topics.map((item, i) => <button key={item.id} className={`topic-node node-${i} ${selected.id === item.id ? "selected" : ""}`} onClick={() => setSelected(item)}>
+              {topics.map((item, i) => <button key={item.id} className={`topic-node node-${i} ${selected.id === item.id ? "selected" : ""}`} onClick={e => selectTopic(item, e.currentTarget)}>
                 <span className={`node-icon ${item.color}`}>{item.icon}</span><b>{title(item)}</b><small>{description(item)}</small>
               </button>)}
             </div>
@@ -608,7 +665,7 @@ export default function Home() {
           </aside>
         </section>
 
-        <section className="selected-strip glass-card" aria-live="polite">
+        <section ref={stripRef} className={`selected-strip glass-card${stripFlash ? " flash" : ""}`} aria-live="polite">
           <span className={`node-icon ${selected.color}`}>{selected.icon}</span>
           <div><small>{t.selected} · {t.established}</small><b>{title(selected)}</b><p>{description(selected)}</p></div>
           <div className="level"><span>{t.level}</span>{t.levels.map((l,i)=><button key={l} className={level===i?"active":""} onClick={()=>setLevel(i)}>{l}</button>)}</div>

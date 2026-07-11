@@ -108,3 +108,20 @@ footer{position:relative;z-index:2;border-top:1px solid rgba(127,177,255,.13);mi
 .ask-close:hover{color:#fff}
 .expand-button.reopen{margin:14px auto 0;display:inline-flex}
 @media (max-width:640px){.ask-chip{top:70px;right:12px}.ask-chip-inner{padding:.5rem .9rem;font-size:.84rem}.ask-overlay{padding-top:9vh}}
+
+/* 노드 선택 혜성 비행 이펙트 */
+.flight-layer{position:fixed;inset:0;width:100vw;height:100vh;z-index:45;pointer-events:none;animation:flight-fade 1.45s ease-out forwards}
+@keyframes flight-fade{0%,62%{opacity:1}100%{opacity:0}}
+.flight-line{stroke:url(#flight-grad);stroke-width:2.2;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(126,214,255,.85));animation:flight-draw .68s cubic-bezier(.3,0,.7,1) forwards}
+@keyframes flight-draw{to{stroke-dashoffset:0}}
+.flight-comet circle{fill:rgba(154,224,255,.5);filter:drop-shadow(0 0 9px #7ec9ff) drop-shadow(0 0 20px rgba(94,168,255,.95))}
+.flight-comet .flight-comet-core{fill:#eafaff}
+
+/* 선택 박스 번쩍임 (도착 인지용) */
+.selected-strip{transition:border-color .5s,box-shadow .5s}
+.selected-strip.flash{border-color:#7ef0ff;box-shadow:0 0 30px rgba(126,240,255,.4);animation:strip-flash 1.15s ease-out}
+@keyframes strip-flash{0%{box-shadow:0 0 0 0 rgba(126,240,255,0)}16%{box-shadow:0 0 40px 8px rgba(126,240,255,.65);border-color:#b8f6ff}100%{box-shadow:0 0 30px rgba(126,240,255,.4)}}
+
+/* 클릭한 노드도 살짝 팝 */
+.topic-node.selected{animation:node-pop .45s ease-out}
+@keyframes node-pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
