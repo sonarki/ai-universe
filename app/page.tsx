@@ -160,6 +160,17 @@ const copy = {
     searchPh: "Search…",
     askMore: "Ask AI for a deeper explanation",
     noResult: "No matches found.",
+    motionLabel: "Motion",
+    motionOn: "Motion on — click to pause the universe",
+    motionOff: "Motion paused — click to bring the universe back",
+    dockLabel: "Dock to side",
+    floatLabel: "Float freely",
+    robotTitle: "AI Robot Guide",
+    robotSub: "Pick a quest and I'll get to work.",
+    questBrief: "3-Minute Quick Summary",
+    questQuiz: "Test My Knowledge (Quiz)",
+    questToolkit: "Real-world Prompt Toolkit",
+    robotWorking: "Robot guide is preparing your quest…",
   },
   ko: {
     tagline: "배우고 · 이해하고 · 미래를 준비하다",
@@ -238,6 +249,17 @@ const copy = {
     searchPh: "찾아보기…",
     askMore: "AI에게 자세히 묻기",
     noResult: "검색 결과가 없습니다.",
+    motionLabel: "모션",
+    motionOn: "모션 켜짐 — 누르면 우주가 잠시 멈춥니다",
+    motionOff: "모션 멈춤 — 누르면 우주가 다시 움직입니다",
+    dockLabel: "옆에 고정",
+    floatLabel: "자유 배치",
+    robotTitle: "AI 로봇 가이드",
+    robotSub: "퀘스트를 고르면 바로 준비할게요.",
+    questBrief: "3분 핵심 요약",
+    questQuiz: "내 실력 퀴즈",
+    questToolkit: "실전 프롬프트 툴킷",
+    robotWorking: "로봇 가이드가 답을 준비 중…",
   },
 };
 
@@ -362,6 +384,13 @@ export default function Home() {
   const [authName, setAuthName] = useState("");
   // 질문창: 평소엔 우측 상단 칩으로 접힘, 누르면 중앙에 펼쳐짐 (모든 페이지 공통)
   const [askOpen, setAskOpen] = useState(false);
+  // 모션 스위치: 사용자가 우주 애니메이션을 켜고 끌 수 있음 (OS 동작줄이기 설정을 초기값으로 존중)
+  const [motionEnabled, setMotionEnabled] = useState(true);
+  // 답변 패널 도킹 모드: 우측 30% 고정 + 본문 좌측 정렬
+  const [isDocked, setIsDocked] = useState(false);
+  // 로봇 가이드 대시보드: 활성 카드 id("learn-0"/"career-2")와 모듈별 퀘스트 결과
+  const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
+  const [questResult, setQuestResult] = useState<Record<string, { loading: boolean; data: string | null; error: string | null }>>({});
   // 자료 섹션: 용어사전 선택·섹션별 찾아보기 검색어
   const [openTerm, setOpenTerm] = useState<string | null>(null);
   const [glossQuery, setGlossQuery] = useState("");
@@ -380,6 +409,7 @@ export default function Home() {
 
   // 패널 머리글 드래그로 이동 (버튼 클릭은 제외, 화면 밖으로 나가지 않게 제한)
   function startPanelDrag(e: ReactPointerEvent<HTMLDivElement>) {
+    if (isDocked) return;
     if ((e.target as HTMLElement).closest("button")) return;
     const panel = panelRef.current;
     if (!panel) return;
@@ -401,6 +431,14 @@ export default function Home() {
   }
 
   useEffect(() => {
+    // 모션·도킹 선호 복원 (모션 초기값은 OS 동작줄이기 설정 존중, 사용자 저장값이 우선)
+    try {
+      const savedMotion = localStorage.getItem("aiu-motion");
+      if (savedMotion !== null) setMotionEnabled(savedMotion === "1");
+      else if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) setMotionEnabled(false);
+      const savedDock = localStorage.getItem("aiu-docked");
+      if (savedDock !== null) setIsDocked(savedDock === "1");
+    } catch { /* 무시 */ }
     let localSteps: Record<string, boolean> = {};
     try {
       const saved = localStorage.getItem("aiu-progress");
@@ -572,7 +610,7 @@ export default function Home() {
     flightTimers.current.forEach(timer => window.clearTimeout(timer));
     flightTimers.current = [];
     const stripEl = stripRef.current;
-    if (sourceEl && stripEl) {
+    if (motionEnabled && sourceEl && stripEl) {
       const from = sourceEl.getBoundingClientRect();
       const to = stripEl.getBoundingClientRect();
       setFlight({
@@ -587,7 +625,7 @@ export default function Home() {
       flightTimers.current.push(window.setTimeout(() => setFlight(null), 1500));
       flightTimers.current.push(window.setTimeout(() => setStripFlash(false), 2100));
     } else {
-      // 좌표를 얻을 수 없는 경우 번쩍임만
+      // 모션 꺼짐 또는 좌표를 얻을 수 없는 경우: 비행 생략, 번쩍임으로 즉각 점프
       setStripFlash(false);
       flightTimers.current.push(window.setTimeout(() => setStripFlash(true), 30));
       flightTimers.current.push(window.setTimeout(() => setStripFlash(false), 1400));
@@ -601,16 +639,104 @@ export default function Home() {
     void submit(undefined, q);
   }
 
+  // 모션 스위치: 사용자 선택을 영구 저장 (OS 설정보다 우선)
+  function toggleMotion() {
+    setMotionEnabled(prev => {
+      const next = !prev;
+      try { localStorage.setItem("aiu-motion", next ? "1" : "0"); } catch { /* 무시 */ }
+      return next;
+    });
+  }
+
+  // 도킹 모드 토글: 우측 30% 고정 ↔ 자유 배치
+  function toggleDock() {
+    setIsDocked(prev => {
+      const next = !prev;
+      try { localStorage.setItem("aiu-docked", next ? "1" : "0"); } catch { /* 무시 */ }
+      return next;
+    });
+  }
+
+  // 로봇 가이드: 활성 모듈 id → 표시 이름
+  function moduleName(moduleId: string) {
+    const [kind, indexStr] = moduleId.split("-");
+    const index = Number(indexStr);
+    if (kind === "learn") return lang === "en" ? learningCards[index][1] : learningCards[index][2];
+    return lang === "en" ? roles[index][0] : roles[index][1];
+  }
+
+  // 로봇 가이드 퀘스트 실행: 페이지를 떠나지 않고 대시보드 안에 인라인 렌더
+  async function runQuest(moduleId: string, quest: "brief" | "quiz" | "toolkit") {
+    if (questResult[moduleId]?.loading) return;
+    const name = moduleName(moduleId);
+    const prompts = {
+      brief: lang === "en"
+        ? `Give me a crisp 3-minute summary of "${name}": the core concepts, why it matters, and one real example.`
+        : `"${name}"의 핵심을 3분 분량으로 요약해 주세요: 핵심 개념, 왜 중요한지, 실제 예시 1개.`,
+      quiz: lang === "en"
+        ? `Create a quiz on "${name}": 3 questions (mix short-answer and multiple-choice) from beginner to advanced. Put all answers and short explanations together at the very end.`
+        : `"${name}" 퀴즈를 내 주세요: 단답형과 선택형을 섞어 입문부터 고급까지 3문항. 정답과 짧은 해설은 맨 마지막에 모아 주세요.`,
+      toolkit: lang === "en"
+        ? `Give me a real-world prompt toolkit for "${name}": 3 copy-ready prompt templates with notes on when to use each.`
+        : `"${name}" 실전 프롬프트 툴킷을 주세요: 바로 복사해 쓸 수 있는 템플릿 3개와 각각의 활용 시점.`,
+    };
+    setQuestResult(prev => ({ ...prev, [moduleId]: { loading: true, data: null, error: null } }));
+    try {
+      const response = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: prompts[quest],
+          language: lang,
+          level: (["beginner", "intermediate", "advanced"] as const)[level],
+          selectedTopic: name,
+        }),
+      });
+      const data = await response.json() as { answer?: string; error?: string };
+      if (!response.ok || !data.answer) throw new Error(data.error || t.error);
+      setQuestResult(prev => ({ ...prev, [moduleId]: { loading: false, data: data.answer ?? null, error: null } }));
+    } catch (error) {
+      setQuestResult(prev => ({ ...prev, [moduleId]: { loading: false, data: null, error: error instanceof Error ? error.message : t.error } }));
+    }
+  }
+
+  // 로봇 가이드 인라인 대시보드 (학습·직무 공용)
+  function robotDashboard() {
+    if (!activeModuleId) return null;
+    const result = questResult[activeModuleId];
+    const name = moduleName(activeModuleId);
+    return (
+      <div className="robot-guide-dashboard glass-card">
+        <div className="robot-avatar"><div className="bot mini"><span className="antenna a1"/><span className="antenna a2"/><b>⌁</b></div></div>
+        <div className="robot-body">
+          <div className="robot-title-row"><b>{t.robotTitle}</b><span>· {name}</span><button type="button" className="robot-close" aria-label={t.close} onClick={() => setActiveModuleId(null)}>×</button></div>
+          <p className="robot-sub">{t.robotSub}</p>
+          <div className="quest-buttons">
+            <button type="button" onClick={() => void runQuest(activeModuleId, "brief")}>⚡ {t.questBrief}</button>
+            <button type="button" onClick={() => void runQuest(activeModuleId, "quiz")}>❓ {t.questQuiz}</button>
+            <button type="button" onClick={() => void runQuest(activeModuleId, "toolkit")}>🛠️ {t.questToolkit}</button>
+          </div>
+          {result?.loading && <div className="quest-loading"><span className="search-spinner"/><b>{t.robotWorking}</b></div>}
+          {result?.error && <div className="ask-error" role="alert"><span>!</span><p>{result.error}</p></div>}
+          {result?.data && <div className="quest-answer"><MarkdownAnswer text={result.data}/></div>}
+        </div>
+      </div>
+    );
+  }
+
   function changeLanguage(next: Lang) {
     setLang(next);
     setAnswer("");
     setCitations([]);
     setAskError("");
     setQuestion("");
+    // 퀘스트 결과는 언어별 답변이므로 초기화
+    setActiveModuleId(null);
+    setQuestResult({});
   }
 
   return (
-    <main className="universe-shell">
+    <main className={`universe-shell${motionEnabled ? "" : " motion-paused"}${isDocked && panelOpen && answer ? " docked-mode" : ""}`}>
       <div className="star-field" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div>
       <header className="topbar">
         <button className="brand" onClick={() => setSection("explore")} aria-label="AI Universe home">
@@ -628,6 +754,13 @@ export default function Home() {
           <span>/</span>
           <button className={lang === "ko" ? "active" : ""} onClick={() => changeLanguage("ko")}>KR</button>
         </div>
+        <button
+          className={motionEnabled ? "motion-toggle" : "motion-toggle off"}
+          onClick={toggleMotion}
+          aria-pressed={!motionEnabled}
+          title={motionEnabled ? t.motionOn : t.motionOff}
+          aria-label={t.motionLabel}
+        >👁</button>
         <div className="account-area">
           {user
             ? <><span className="account-name" title={user.email}>✦ {user.name}</span><button className="account-button" onClick={() => void logout()}>{t.logout}</button></>
@@ -683,6 +816,9 @@ export default function Home() {
           <button type="button" className="ask-close" aria-label={t.close} onClick={() => setAskOpen(false)}>✕</button>
           <span className="ask-spark">✦</span>
           <h2>{t.question}</h2>
+          <div className="level-toggle" role="radiogroup" aria-label={t.level}>
+            {t.levels.map((label, i) => <button type="button" key={label} className={level === i ? "active" : ""} aria-pressed={level === i} onClick={() => setLevel(i)}>{label}</button>)}
+          </div>
           <div className="question-box"><input value={question} onChange={e => setQuestion(e.target.value)} placeholder={t.placeholder} aria-label={t.placeholder} maxLength={1200} disabled={loading} autoFocus/><button aria-label="Send question" disabled={loading}>{loading ? "···" : "➤"}</button></div>
           <div className="ask-actions"><button type="button" onClick={() => {setAskOpen(false); setSection("explore"); window.setTimeout(() => document.getElementById("topic-grid")?.scrollIntoView({behavior:"smooth"}), 80);}}>⌘ {t.browse}</button><span>or</span><button type="button" onClick={() => chooseQuestion(t.guided[0])}>◇ {t.suggestion}</button></div>
           {loading && <div className="search-progress" role="status"><span className="search-spinner"/><b>{t.searching[loadingStep]}</b><button type="button" onClick={() => abortRef.current?.abort()}>{t.cancel}</button></div>}
@@ -692,16 +828,17 @@ export default function Home() {
       </div>}
 
       {panelOpen && answer && <div
-        className="answer-panel glass-card"
+        className={`answer-panel glass-card${isDocked ? " docked" : ""}`}
         ref={panelRef}
         role="dialog"
         aria-label={t.guide}
-        style={panelPos ? { left: panelPos.x, top: panelPos.y, transform: "none" } : undefined}
+        style={!isDocked && panelPos ? { left: panelPos.x, top: panelPos.y, transform: "none" } : undefined}
       >
         <div className="answer-panel-head" onPointerDown={startPanelDrag}>
           <b>⌁ {t.guide}</b>
           <span className={usedWeb ? "web-badge" : "kb-badge"}>{usedWeb ? `✓ ${t.webChecked}` : `✓ ${t.knowledgeChecked}`}</span>
-          <small className="panel-hint">{t.panelHint}</small>
+          {!isDocked && <small className="panel-hint">{t.panelHint}</small>}
+          <button type="button" className="dock-button" aria-label={isDocked ? t.floatLabel : t.dockLabel} title={isDocked ? t.floatLabel : t.dockLabel} onClick={toggleDock}>{isDocked ? "⧉" : "⇥"}</button>
           <button type="button" aria-label={t.close} onClick={() => setPanelOpen(false)}>✕</button>
         </div>
         <div className="answer-panel-body">
@@ -776,9 +913,9 @@ export default function Home() {
 
       {activeContent !== "explore" && <section className="content-page">
         <button className="back" onClick={() => setSection("explore")}>← {lang === "en" ? "Back to the universe" : "전체 지도로 돌아가기"}</button>
-        {activeContent === "learn" && <><div className="page-intro"><span>LEARNING PATHS</span><h1>{lang === "en" ? "Learn AI in the right order." : "AI를 올바른 순서로 배우세요."}</h1><p>{lang === "en" ? "A guided path from first principles to practical applications — at your pace." : "기초 원리부터 실제 활용까지, 나의 속도에 맞춘 단계형 학습 과정입니다."}</p></div><div className="learning-grid">{learningCards.map(c=><article key={c[0]}><span>{c[0]}</span><h2>{lang === "en" ? c[1] : c[2]}</h2><p>{lang === "en" ? c[3] : c[4]}</p><button onClick={() => askFromPage(lang === "en" ? `I want to start the "${c[1]}" module. Give me a structured introduction and the first key concepts.` : `"${c[2]}" 모듈을 시작하고 싶어요. 전체 구성과 첫 핵심 개념을 알려 주세요.`)}>{lang === "en" ? "Start module" : "학습 시작"} →</button></article>)}</div></>}
+        {activeContent === "learn" && <><div className="page-intro"><span>LEARNING PATHS</span><h1>{lang === "en" ? "Learn AI in the right order." : "AI를 올바른 순서로 배우세요."}</h1><p>{lang === "en" ? "A guided path from first principles to practical applications — at your pace." : "기초 원리부터 실제 활용까지, 나의 속도에 맞춘 단계형 학습 과정입니다."}</p></div><div className="learning-grid">{learningCards.map((c, i)=><article key={c[0]} className={activeModuleId === `learn-${i}` ? "active" : ""}><span>{c[0]}</span><h2>{lang === "en" ? c[1] : c[2]}</h2><p>{lang === "en" ? c[3] : c[4]}</p><button onClick={() => setActiveModuleId(activeModuleId === `learn-${i}` ? null : `learn-${i}`)}>{lang === "en" ? "Start module" : "학습 시작"} →</button></article>)}</div>{activeModuleId?.startsWith("learn-") && robotDashboard()}</>}
         {activeContent === "timeline" && <><div className="page-intro"><span>PAST · PRESENT · FUTURE</span><h1>{lang === "en" ? "The story of artificial intelligence" : "인공지능이 걸어온 길"}</h1><p>{lang === "en" ? "Progress was never a straight line. Explore the breakthroughs, winters and turning points." : "AI의 발전은 직선이 아니었습니다. 도약과 침체, 중요한 전환점을 살펴보세요."}</p></div><div className="full-timeline">{timeline.map((e,i)=><article key={e[0]}><i/><time>{e[0]}</time><div><span>{i < 5 ? t.established : (lang === "en" ? "Evolving" : "변화 중")}</span><h2>{lang === "en" ? e[1] : e[2]}</h2></div></article>)}</div></>}
-        {activeContent === "careers" && <><div className="page-intro"><span>ROLES & CAREERS</span><h1>{lang === "en" ? "Find your place in the AI ecosystem." : "AI 생태계에서 나의 자리를 찾아보세요."}</h1><p>{lang === "en" ? "AI needs researchers, builders, communicators, designers and responsible decision-makers." : "AI에는 연구자·개발자·기획자·디자이너·책임 있는 의사결정자가 모두 필요합니다."}</p></div><div className="role-grid">{roles.map((r,i)=><article key={r[0]}><span>0{i+1}</span><h2>{lang === "en" ? r[0] : r[1]}</h2><p>{lang === "en" ? r[2] : r[3]}</p><button onClick={() => askFromPage(lang === "en" ? `What does an ${r[0]} do? Explain the daily work, required skills and how to prepare for this role.` : `${r[1]}는 어떤 일을 하나요? 하는 일, 필요한 역량, 준비 방법을 알려 주세요.`)}>{lang === "en" ? "Explore role" : "직무 알아보기"} →</button></article>)}</div></>}
+        {activeContent === "careers" && <><div className="page-intro"><span>ROLES & CAREERS</span><h1>{lang === "en" ? "Find your place in the AI ecosystem." : "AI 생태계에서 나의 자리를 찾아보세요."}</h1><p>{lang === "en" ? "AI needs researchers, builders, communicators, designers and responsible decision-makers." : "AI에는 연구자·개발자·기획자·디자이너·책임 있는 의사결정자가 모두 필요합니다."}</p></div><div className="role-grid">{roles.map((r,i)=><article key={r[0]} className={activeModuleId === `career-${i}` ? "active" : ""}><span>0{i+1}</span><h2>{lang === "en" ? r[0] : r[1]}</h2><p>{lang === "en" ? r[2] : r[3]}</p><button onClick={() => setActiveModuleId(activeModuleId === `career-${i}` ? null : `career-${i}`)}>{lang === "en" ? "Explore role" : "직무 알아보기"} →</button></article>)}</div>{activeModuleId?.startsWith("career-") && robotDashboard()}</>}
         {activeContent === "resources" && <>
           <div className="page-intro"><span>TRUSTED STARTING POINTS</span><h1>{lang === "en" ? "Resources for deeper learning" : "더 깊은 학습을 위한 자료"}</h1><p>{lang === "en" ? "A structured index for concepts, practical skills and responsible AI." : "개념·실무 능력·책임 있는 AI를 위한 체계적인 자료 모음입니다."}</p></div>
           <div className="resource-sections">

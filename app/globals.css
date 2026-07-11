@@ -179,3 +179,50 @@ footer{position:relative;z-index:2;border-top:1px solid rgba(127,177,255,.13);mi
 .term-detail p{margin:0;font-size:.92rem;line-height:1.65;color:#e6eeff}
 .term-detail .primary-button{align-self:flex-start;font-size:.84rem;padding:.5rem 1rem}
 .no-result{margin:0;font-size:.86rem;color:rgba(214,226,255,.5)}
+
+/* ===== Sprint 1: UX 퀵윈 3종 + 로봇 가이드 ===== */
+
+/* 1. 모션 스위치 (헤더) — 모든 반복 애니메이션 정지, transition·스피너는 보존 */
+.motion-toggle{margin-left:.55rem;width:36px;height:36px;border-radius:50%;border:1px solid rgba(140,165,255,.3);background:rgba(120,150,255,.08);color:#c9d9ff;font-size:1rem;cursor:pointer;display:grid;place-items:center;transition:all .25s;position:relative;flex:none}
+.motion-toggle:hover{background:rgba(120,150,255,.18)}
+.motion-toggle.off{opacity:.55}
+.motion-toggle.off::after{content:"";position:absolute;width:70%;height:2px;background:#ff9d9d;transform:rotate(-45deg);border-radius:2px}
+.motion-paused *,.motion-paused *::before,.motion-paused *::after{animation-play-state:paused!important}
+.motion-paused .search-spinner{animation-play-state:running!important}
+
+/* 2. 난이도 토글 (질문 오버레이) */
+.level-toggle{display:inline-flex;margin:0 auto 14px;background:rgba(10,22,52,.7);border:1px solid rgba(140,165,255,.25);border-radius:999px;padding:3px;gap:2px}
+.level-toggle button{border:none;background:transparent;color:rgba(214,226,255,.65);padding:.42rem 1.05rem;border-radius:999px;font-size:.84rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.level-toggle button:hover{color:#fff}
+.level-toggle button.active{background:linear-gradient(90deg,#4f83ff,#59d6ff);color:#06122e;font-weight:700}
+
+/* 3. 도킹 모드 (공부 모드 화면 분할) */
+.dock-button{flex:none;background:none;border:none;color:rgba(214,226,255,.65);font-size:.95rem;cursor:pointer;padding:.15rem .3rem;line-height:1}
+.dock-button:hover{color:#7ef0ff}
+.universe-shell{transition:padding-right .3s cubic-bezier(.4,0,.2,1)}
+.universe-shell.docked-mode{padding-right:min(30vw,640px)}
+.answer-panel.docked{position:fixed;top:0;right:0;left:auto!important;transform:none!important;width:min(30vw,640px);min-width:340px;height:100vh;max-height:100vh;border-radius:0;resize:none;border-left:1px solid rgba(140,165,255,.28);box-shadow:-12px 0 40px rgba(0,0,0,.6)}
+.answer-panel.docked .answer-panel-head{cursor:default}
+.answer-panel.docked .resize-corner{display:none}
+@media (max-width:900px){.universe-shell.docked-mode{padding-right:0}.answer-panel.docked{top:auto;bottom:0;width:100vw;min-width:0;height:72vh;border-radius:18px 18px 0 0;border-left:none;border-top:1px solid rgba(140,165,255,.3)}}
+
+/* 4. 로봇 가이드 인라인 대시보드 */
+.robot-guide-dashboard{margin-top:16px;padding:20px 22px;display:flex;gap:20px;align-items:flex-start;animation:dash-slide .25s cubic-bezier(0,0,.2,1)}
+@keyframes dash-slide{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.robot-avatar{flex:none}
+.robot-avatar .bot.mini{transform:scale(.85);animation:bot-idle 3.5s ease-in-out infinite}
+@keyframes bot-idle{0%,100%{transform:scale(.85)}50%{transform:scale(.92)}}
+.robot-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:.6rem}
+.robot-title-row{display:flex;align-items:center;gap:.5rem}
+.robot-title-row b{color:#dbe7ff;font-size:1rem}
+.robot-title-row span{color:#8fb7ff;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.robot-close{margin-left:auto;background:none;border:none;color:rgba(214,226,255,.6);font-size:1.3rem;cursor:pointer;line-height:1;padding:.1rem .3rem}
+.robot-close:hover{color:#fff}
+.robot-sub{margin:0;font-size:.85rem;color:rgba(214,226,255,.6)}
+.quest-buttons{display:flex;flex-wrap:wrap;gap:.5rem}
+.quest-buttons button{background:rgba(120,150,255,.1);border:1px solid rgba(140,165,255,.28);color:#d6e2ff;border-radius:999px;padding:.5rem 1rem;font-size:.86rem;cursor:pointer;transition:all .2s}
+.quest-buttons button:hover{background:rgba(120,150,255,.22);border-color:#59d6ff}
+.quest-loading{display:flex;align-items:center;gap:.6rem;color:#bfe4ff;font-size:.88rem;margin-top:.3rem}
+.quest-answer{margin-top:.5rem;border-top:1px solid rgba(140,165,255,.15);padding-top:.85rem}
+.learning-grid article.active,.role-grid article.active{border-color:#59d6ff;box-shadow:0 0 18px rgba(94,168,255,.3)}
+@media (max-width:640px){.robot-guide-dashboard{flex-direction:column}.motion-toggle{width:32px;height:32px}}
