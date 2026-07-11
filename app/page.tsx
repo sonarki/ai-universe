@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, ReactNode, useMemo, useRef, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 type Lang = "en" | "ko";
 type Section = "explore" | "learn" | "timeline" | "careers" | "resources";
@@ -120,6 +120,9 @@ const copy = {
     journeySub: "Your AI learning journey starts here.",
     footer: "A structured, evidence-aware guide to AI’s past, present and future.",
     noNews: "Concepts are labeled by certainty. No fabricated live statistics or news.",
+    progressTitle: "Learning progress",
+    progressHint: "Ask about every topic at all three levels to reach 100%.",
+    progressSteps: "steps completed",
   },
   ko: {
     tagline: "배우고 · 이해하고 · 미래를 준비하다",
@@ -158,6 +161,9 @@ const copy = {
     journeySub: "AI를 이해하는 여정이 여기서 시작됩니다.",
     footer: "AI의 과거·현재·미래를 체계적이고 근거 중심으로 안내합니다.",
     noNews: "정보의 확실성을 구분하며, 가짜 최신 통계나 뉴스를 사용하지 않습니다.",
+    progressTitle: "학습 진행률",
+    progressHint: "모든 주제를 세 가지 난이도로 공부하면 100%가 됩니다.",
+    progressSteps: "단계 완료",
   },
 };
 
@@ -211,7 +217,30 @@ export default function Home() {
   const [askError, setAskError] = useState("");
   const [level, setLevel] = useState(0);
   const [menu, setMenu] = useState(false);
+  // 학습 진행률: "주제id:난이도" 단위로 완료를 기록 (10주제 × 3난이도 = 30단계 = 100%)
+  const [studyProgress, setStudyProgress] = useState<Record<string, boolean>>({});
   const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("aiu-progress");
+      if (saved) setStudyProgress(JSON.parse(saved) as Record<string, boolean>);
+    } catch { /* 저장된 진행률이 손상된 경우 무시 */ }
+  }, []);
+
+  function markStudied(topicId: string, levelIndex: number) {
+    setStudyProgress(prev => {
+      const stepKey = `${topicId}:${levelIndex}`;
+      if (prev[stepKey]) return prev;
+      const next = { ...prev, [stepKey]: true };
+      try { localStorage.setItem("aiu-progress", JSON.stringify(next)); } catch { /* 저장 불가 환경 무시 */ }
+      return next;
+    });
+  }
+
+  const totalSteps = topics.length * 3;
+  const doneSteps = Object.keys(studyProgress).length;
+  const progressPercent = Math.min(100, Math.round((doneSteps / totalSteps) * 100));
   const t = copy[lang];
   const title = (item: typeof topics[number]) => lang === "en" ? item.en : item.ko;
   const description = (item: typeof topics[number]) => lang === "en" ? item.enD : item.koD;
@@ -262,6 +291,7 @@ export default function Home() {
       setCitations(data.citations ?? []);
       setCheckedAt(data.checkedAt ?? "");
       setUsedWeb(Boolean(data.usedWeb));
+      markStudied(selected.id, level);
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return;
       setAskError(error instanceof Error ? error.message : t.error);
@@ -360,7 +390,17 @@ export default function Home() {
 
         <section id="topic-grid" className="quick-section">
           <div className="section-head"><div><span>{lang === "en" ? "EXPLORE BY TOPIC" : "주제별 탐색"}</span><h2>{lang === "en" ? "Build your own path through AI" : "나만의 AI 학습 경로를 만들어 보세요"}</h2></div><p>{lang === "en" ? "Every concept connects to its history, uses, careers, risks and future." : "모든 개념은 역사·활용·직무·위험·미래와 연결됩니다."}</p></div>
-          <div className="topic-grid">{topics.map(item => <button key={item.id} onClick={() => {setSelected(item); window.scrollTo({top:300,behavior:"smooth"});}}><span className={`node-icon ${item.color}`}>{item.icon}</span><div><b>{title(item)}</b><p>{description(item)}</p></div><i>↗</i></button>)}</div>
+          <div className="progress-card glass-card">
+            <div className="progress-top">
+              <div><span className="progress-label">✦ {t.progressTitle}</span><p>{t.progressHint}</p></div>
+              <b className="progress-percent">{progressPercent}<i>%</i></b>
+            </div>
+            <div className="progress-track" role="progressbar" aria-valuenow={progressPercent} aria-valuemin={0} aria-valuemax={100} aria-label={t.progressTitle}>
+              <span className="progress-fill" style={{width: `${progressPercent}%`}}/>
+            </div>
+            <small>{doneSteps} / {totalSteps} {t.progressSteps}</small>
+          </div>
+          <div className="topic-grid">{topics.map(item => <button key={item.id} onClick={() => {setSelected(item); window.scrollTo({top:300,behavior:"smooth"});}}><span className={`node-icon ${item.color}`}>{item.icon}</span><div><b>{title(item)}</b><p>{description(item)}</p><span className="level-dots">{[0,1,2].map(levelIndex => <i key={levelIndex} className={studyProgress[`${item.id}:${levelIndex}`] ? "done" : ""} title={t.levels[levelIndex]}/>)}</span></div><i>↗</i></button>)}</div>
         </section>
       </>}
 

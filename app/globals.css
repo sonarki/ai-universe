@@ -32,3 +32,19 @@ footer{position:relative;z-index:2;border-top:1px solid rgba(127,177,255,.13);mi
 .answer-body th,.answer-body td{padding:.5rem .65rem;text-align:left;border-bottom:1px solid rgba(140,165,255,.14);vertical-align:top}
 .answer-body th{background:rgba(120,150,255,.1);color:#dbe7ff;white-space:nowrap}
 .answer-body tr:last-child td{border-bottom:none}
+
+/* 학습 진행률 게이지 */
+.progress-card{margin:0 0 1.6rem;padding:1.15rem 1.4rem;display:flex;flex-direction:column;gap:.7rem}
+.progress-top{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem}
+.progress-label{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:#8fb7ff;font-weight:700}
+.progress-top p{margin:.3rem 0 0;font-size:.85rem;color:rgba(214,226,255,.62)}
+.progress-percent{font-size:2rem;font-weight:800;line-height:1;background:linear-gradient(90deg,#6ea8ff,#7ef0ff,#b48cff);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
+.progress-percent i{font-style:normal;font-size:1.05rem;margin-left:.1rem}
+.progress-track{position:relative;height:12px;border-radius:999px;background:rgba(120,150,255,.12);border:1px solid rgba(140,165,255,.18);overflow:hidden}
+.progress-fill{position:absolute;inset:0 auto 0 0;border-radius:999px;background:linear-gradient(90deg,#4f83ff,#59d6ff 55%,#a78bff);box-shadow:0 0 14px rgba(94,168,255,.55);transition:width .8s cubic-bezier(.22,1,.36,1);min-width:0}
+.progress-fill::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);background-size:200% 100%;animation:progress-sheen 2.6s linear infinite;border-radius:999px}
+@keyframes progress-sheen{from{background-position:200% 0}to{background-position:-100% 0}}
+.progress-card small{font-size:.78rem;color:rgba(214,226,255,.55)}
+.level-dots{display:inline-flex;gap:.3rem;margin-top:.45rem}
+.level-dots i{width:8px;height:8px;border-radius:50%;background:rgba(140,165,255,.22);border:1px solid rgba(140,165,255,.3);transition:all .3s}
+.level-dots i.done{background:linear-gradient(135deg,#59d6ff,#a78bff);border-color:transparent;box-shadow:0 0 6px rgba(94,168,255,.6)}
