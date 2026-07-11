@@ -652,6 +652,12 @@ export default function Home() {
           <div className="knowledge-stage">
             <div className="map-heading"><span>{t.mapLabel}</span><b>{t.mapTitle}</b></div>
             <div className="orbit orbit-a"/><div className="orbit orbit-b"/><div className="orbit orbit-c"/>
+            <div className="celestial" aria-hidden="true">
+              <span className="core-glow"/>
+              <div className="planet-ring pr-a"><i className="planet p-cyan"/></div>
+              <div className="planet-ring pr-b"><i className="planet p-violet"/><i className="planet p-small"/></div>
+              <div className="planet-ring pr-c"><i className="planet p-gold"/></div>
+            </div>
             <div className="topic-orbit">
               {topics.map((item, i) => <button key={item.id} className={`topic-node node-${i} ${selected.id === item.id ? "selected" : ""}`} onClick={e => selectTopic(item, e.currentTarget)}>
                 <span className={`node-icon ${item.color}`}>{item.icon}</span><b>{title(item)}</b><small>{description(item)}</small>

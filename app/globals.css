@@ -125,3 +125,29 @@ footer{position:relative;z-index:2;border-top:1px solid rgba(127,177,255,.13);mi
 /* 클릭한 노드도 살짝 팝 */
 .topic-node.selected{animation:node-pop .45s ease-out}
 @keyframes node-pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+
+/* 노드 외곽 균일 발광 (모든 색상 동일 강도) */
+.topic-node .node-icon{border-width:1.5px;box-shadow:0 0 6px color-mix(in srgb,currentColor 90%,transparent),0 0 18px color-mix(in srgb,currentColor 55%,transparent),inset 0 0 10px color-mix(in srgb,currentColor 28%,transparent)}
+
+/* 우주 천체 시스템: 중심 항성 + 회전 궤도 + 공전 행성 */
+.celestial{position:absolute;inset:0;pointer-events:none;z-index:1}
+.core-glow{position:absolute;left:50%;top:47%;width:14px;height:14px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#eaf6ff,#7ec9ff 45%,rgba(94,168,255,0) 72%);box-shadow:0 0 28px rgba(126,214,255,.85),0 0 70px rgba(79,131,255,.45);animation:core-pulse 5.5s ease-in-out infinite}
+@keyframes core-pulse{0%,100%{opacity:.7;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.3)}}
+.planet-ring{position:absolute;left:50%;top:47%;aspect-ratio:1;border-radius:50%;border:1px dashed rgba(126,177,255,.13)}
+.pr-a{width:24%;animation:ring-spin 20s linear infinite}
+.pr-b{width:40%;animation:ring-spin 33s linear infinite reverse}
+.pr-c{width:56%;animation:ring-spin 47s linear infinite}
+@keyframes ring-spin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+.planet{position:absolute;left:50%;top:-4px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:#9be8ff;box-shadow:0 0 10px #7ec9ff,0 0 22px rgba(94,168,255,.85)}
+.planet.p-violet{background:#c3a8ff;box-shadow:0 0 10px #a78bff,0 0 22px rgba(167,139,255,.85)}
+.planet.p-gold{background:#ffd98c;box-shadow:0 0 10px #ffc866,0 0 20px rgba(255,200,102,.75)}
+.planet.p-small{top:auto;bottom:-3px;width:5px;height:5px;margin-left:-2.5px;background:#8fd6ff;box-shadow:0 0 8px #7ec9ff}
+
+/* 기존 타원 궤도도 천천히 세차 회전 */
+.orbit-a{animation:orbit-spin-a 95s linear infinite}
+.orbit-b{animation:orbit-spin-b 120s linear infinite}
+.orbit-c{animation:orbit-spin-c 150s linear infinite}
+@keyframes orbit-spin-a{from{transform:translate(-50%,-50%) rotate(-6deg)}to{transform:translate(-50%,-50%) rotate(354deg)}}
+@keyframes orbit-spin-b{from{transform:translate(-50%,-50%) rotate(14deg)}to{transform:translate(-50%,-50%) rotate(-346deg)}}
+@keyframes orbit-spin-c{from{transform:translate(-50%,-50%) rotate(68deg)}to{transform:translate(-50%,-50%) rotate(428deg)}}
+@media (max-width:900px){.celestial{display:none}}
