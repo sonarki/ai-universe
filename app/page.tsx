@@ -5,6 +5,23 @@ import { FormEvent, PointerEvent as ReactPointerEvent, ReactNode, useEffect, use
 type Lang = "en" | "ko";
 type Section = "explore" | "learn" | "timeline" | "careers" | "resources";
 
+// 카테고리별 흰색 라인 아이콘 (레퍼런스 스타일 — 어두운 유리 서클 안 미니멀 스트로크)
+function NodeIcon({ id }: { id: string }) {
+  const icons: Record<string, ReactNode> = {
+    history: <><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></>,
+    foundations: <><path d="M4 20V5l15 15H4z"/><path d="M8 16v-2.5M11.5 16v-1"/></>,
+    ml: <><path d="M3.5 20h17"/><path d="M6 20v-8M12 20V6M18 20v-5"/></>,
+    deep: <><path d="M12 4l8 4-8 4-8-4 8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 16l8 4 8-4"/></>,
+    gen: <><path d="M12 4l1.8 4.7 4.7 1.8-4.7 1.8L12 17l-1.8-4.7-4.7-1.8 4.7-1.8L12 4z"/><circle cx="18.5" cy="17.5" r="1" fill="currentColor" stroke="none"/></>,
+    llm: <><path d="M4 6.5A2.5 2.5 0 016.5 4h11A2.5 2.5 0 0120 6.5v7a2.5 2.5 0 01-2.5 2.5H10l-4.5 4v-4h-1A2.5 2.5 0 014 13.5v-7z"/><circle cx="9" cy="10" r=".9" fill="currentColor" stroke="none"/><circle cx="12.5" cy="10" r=".9" fill="currentColor" stroke="none"/><circle cx="16" cy="10" r=".9" fill="currentColor" stroke="none"/></>,
+    agents: <><rect x="5" y="8" width="14" height="10" rx="2.5"/><path d="M12 8V5.2"/><circle cx="12" cy="4" r="1.1"/><circle cx="9.5" cy="12.5" r="1" fill="currentColor" stroke="none"/><circle cx="14.5" cy="12.5" r="1" fill="currentColor" stroke="none"/><path d="M9.5 15.5h5"/></>,
+    current: <path d="M13 3L5 14h6l-1 7 8-11h-6l1-7z"/>,
+    future: <><path d="M12 3c3 2 4.5 5.5 4.5 9l-4.5 4-4.5-4C7.5 8.5 9 5 12 3z"/><circle cx="12" cy="9.5" r="1.6"/><path d="M9 17.5L7.8 20.5M15 17.5l1.2 3M12 17.5v3.5"/></>,
+    ethics: <><path d="M12 3l7 3v5c0 4.5-3 7.8-7 10-4-2.2-7-5.5-7-10V6l7-3z"/><path d="M9 11.5l2 2 4-4"/></>,
+  };
+  return <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{icons[id]}</svg>;
+}
+
 // 답변 텍스트의 인라인 마크다운(링크·굵게·코드)을 React 요소로 변환
 function renderInline(text: string, keyPrefix: string): ReactNode[] {
   const nodes: ReactNode[] = [];
@@ -403,6 +420,8 @@ export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   // 좌측 타임라인 인라인 아코디언 (열린 연도 index)
   const [expandedEra, setExpandedEra] = useState<number | null>(null);
+  // 지식지도 연결선 (중앙 AI Core → 각 노드, 데스크톱 전용)
+  const [mapLinks, setMapLinks] = useState<Array<{ x1: number; y1: number; x2: number; y2: number }>>([]);
   // 현재 답변 즐겨찾기 여부
   const [starred, setStarred] = useState(false);
   // 답변 패널 도킹 모드: 우측 30% 고정 + 본문 좌측 정렬
@@ -458,6 +477,25 @@ export default function Home() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    // 지식지도 연결선: 중앙 허브 → 각 노드 좌표 실측 (데스크톱 전용)
+    function measureLinks() {
+      const stage = document.querySelector(".knowledge-stage");
+      if (!stage || window.innerWidth <= 900) { setMapLinks([]); return; }
+      const stageRect = stage.getBoundingClientRect();
+      const cx = stageRect.width / 2;
+      const cy = stageRect.height * 0.47;
+      const icons = stage.querySelectorAll(".topic-node .node-icon");
+      setMapLinks([...icons].map(icon => {
+        const rect = icon.getBoundingClientRect();
+        return { x1: cx, y1: cy, x2: rect.left - stageRect.left + rect.width / 2, y2: rect.top - stageRect.top + rect.height / 2 };
+      }));
+    }
+    const timer = window.setTimeout(measureLinks, 120);
+    window.addEventListener("resize", measureLinks);
+    return () => { window.clearTimeout(timer); window.removeEventListener("resize", measureLinks); };
+  }, [section, lang]);
 
   useEffect(() => {
     // 모션·도킹 선호 복원 (모션 초기값은 OS 동작줄이기 설정 존중, 사용자 저장값이 우선)
@@ -911,15 +949,19 @@ export default function Home() {
           <div className="knowledge-stage">
             <div className="map-heading"><span>{t.mapLabel}</span><b>{t.mapTitle}</b></div>
             <div className="orbit orbit-a"/><div className="orbit orbit-b"/><div className="orbit orbit-c"/>
+            {mapLinks.length > 0 && <svg className="link-layer" aria-hidden="true">
+              {mapLinks.map((link, i) => <line key={i} x1={link.x1} y1={link.y1} x2={link.x2} y2={link.y2}/>)}
+            </svg>}
             <div className="celestial" aria-hidden="true">
               <span className="core-glow"/>
+              <span className="core-label">{lang === "en" ? "AI Core" : "AI 코어"}</span>
               <div className="planet-ring pr-a"><i className="planet p-cyan"/></div>
               <div className="planet-ring pr-b"><i className="planet p-violet"/><i className="planet p-small"/></div>
               <div className="planet-ring pr-c"><i className="planet p-gold"/></div>
             </div>
             <div className="topic-orbit">
               {topics.map((item, i) => <button key={item.id} className={`topic-node node-${i} ${selected.id === item.id ? "selected" : ""}`} onClick={e => selectTopic(item, e.currentTarget)}>
-                <span className={`node-icon ${item.color}`}>{item.icon}</span><b>{title(item)}</b><small>{description(item)}</small>
+                <span className={`node-icon ${item.color}`}><NodeIcon id={item.id}/></span><b>{title(item)}</b><small>{description(item)}</small>
               </button>)}
             </div>
           </div>
@@ -931,7 +973,7 @@ export default function Home() {
         </section>
 
         <section ref={stripRef} className={`selected-strip glass-card${stripFlash ? " flash" : ""}`} aria-live="polite">
-          <span className={`node-icon ${selected.color}`}>{selected.icon}</span>
+          <span className={`node-icon ${selected.color}`}><NodeIcon id={selected.id}/></span>
           <div><small>{t.selected} · {t.established}</small><b>{title(selected)}</b><p>{description(selected)}</p></div>
           <div className="level"><span>{t.level}</span>{t.levels.map((l,i)=><button key={l} className={level===i?"active":""} onClick={()=>setLevel(i)}>{l}</button>)}</div>
           <button className="primary-button" onClick={() => {const q = lang === "en" ? `Explain ${selected.en}` : `${selected.ko}을 설명해 주세요`; window.scrollTo({top:200,behavior:"smooth"}); void submit(undefined, q);}}>{t.askAbout} →</button>
@@ -949,7 +991,7 @@ export default function Home() {
             </div>
             <small>{doneSteps} / {totalSteps} {t.progressSteps}{user && <em className="sync-note"> · ✓ {t.synced}</em>}</small>
           </div>
-          <div className="topic-grid">{topics.map(item => <button key={item.id} onClick={() => {setSelected(item); window.scrollTo({top:300,behavior:"smooth"});}}><span className={`node-icon ${item.color}`}>{item.icon}</span><div><b>{title(item)}</b><p>{description(item)}</p><span className="level-dots">{[0,1,2].map(levelIndex => <i key={levelIndex} className={studyProgress[`${item.id}:${levelIndex}`] ? "done" : ""} title={t.levels[levelIndex]}/>)}</span></div><i>↗</i></button>)}</div>
+          <div className="topic-grid">{topics.map(item => <button key={item.id} onClick={() => {setSelected(item); window.scrollTo({top:300,behavior:"smooth"});}}><span className={`node-icon ${item.color}`}><NodeIcon id={item.id}/></span><div><b>{title(item)}</b><p>{description(item)}</p><span className="level-dots">{[0,1,2].map(levelIndex => <i key={levelIndex} className={studyProgress[`${item.id}:${levelIndex}`] ? "done" : ""} title={t.levels[levelIndex]}/>)}</span></div><i>↗</i></button>)}</div>
         </section>
       </>}
 
