@@ -490,9 +490,8 @@ export default function Home() {
     setSelected(item);
     flightTimers.current.forEach(timer => window.clearTimeout(timer));
     flightTimers.current = [];
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const stripEl = stripRef.current;
-    if (!reduceMotion && sourceEl && stripEl) {
+    if (sourceEl && stripEl) {
       const from = sourceEl.getBoundingClientRect();
       const to = stripEl.getBoundingClientRect();
       setFlight({
@@ -507,7 +506,7 @@ export default function Home() {
       flightTimers.current.push(window.setTimeout(() => setFlight(null), 1500));
       flightTimers.current.push(window.setTimeout(() => setStripFlash(false), 2100));
     } else {
-      // 모션 축소 환경에서는 비행 없이 번쩍임만
+      // 좌표를 얻을 수 없는 경우 번쩍임만
       setStripFlash(false);
       flightTimers.current.push(window.setTimeout(() => setStripFlash(true), 30));
       flightTimers.current.push(window.setTimeout(() => setStripFlash(false), 1400));
