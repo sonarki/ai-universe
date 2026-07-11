@@ -1,0 +1,301 @@
+"use client";
+
+import { FormEvent, useMemo, useRef, useState } from "react";
+
+type Lang = "en" | "ko";
+type Section = "explore" | "learn" | "timeline" | "careers" | "resources";
+
+const copy = {
+  en: {
+    tagline: "Learn · Understand · Shape the Future",
+    nav: ["Explore", "Learn", "Timeline", "Careers", "Resources"],
+    eyebrow: "YOUR MAP TO THE WORLD OF AI",
+    titleA: "See the whole of AI.",
+    titleB: "Understand how it connects.",
+    intro: "Explore the ideas, history, people, risks and possibilities shaping artificial intelligence — in one connected universe.",
+    question: "What are you curious about?",
+    placeholder: "Ask anything about AI…",
+    browse: "Browse topics",
+    suggestion: "Try a guided question",
+    mapLabel: "INTERACTIVE KNOWLEDGE MAP",
+    mapTitle: "Start anywhere. Follow every connection.",
+    history: "AI Timeline",
+    historySub: "From logic to learning machines",
+    guide: "AI Guide",
+    guideText: "I’ll help you explore AI in plain language — then go deeper whenever you’re ready.",
+    selected: "Selected concept",
+    close: "Close",
+    level: "Explanation level",
+    levels: ["Beginner", "Intermediate", "Advanced"],
+    established: "Established",
+    askAbout: "Ask about this",
+    guided: ["What is the difference between AI, ML and deep learning?", "How do large language models work?", "Which AI career fits me?"],
+    answerIntro: "Here’s a clear starting point:",
+    searching: ["Understanding your question…", "Checking AI Universe knowledge…", "Searching current sources when needed…", "Comparing evidence…"],
+    cancel: "Stop",
+    sources: "Sources",
+    checked: "Checked",
+    webChecked: "Web checked",
+    knowledgeChecked: "Knowledge base",
+    error: "The question could not be completed. Please try again.",
+    answerFallback: "AI is a broad field of systems that perform tasks linked to human intelligence. A useful way to learn it is to begin with foundations, then follow the map through machine learning, deep learning and today’s generative models.",
+    journey: "Choose a topic or ask in your own words.",
+    journeySub: "Your AI learning journey starts here.",
+    footer: "A structured, evidence-aware guide to AI’s past, present and future.",
+    noNews: "Concepts are labeled by certainty. No fabricated live statistics or news.",
+  },
+  ko: {
+    tagline: "배우고 · 이해하고 · 미래를 준비하다",
+    nav: ["탐색", "학습", "역사", "직무", "자료"],
+    eyebrow: "AI 세계를 이해하는 하나의 지도",
+    titleA: "AI의 전체 그림을 보고,",
+    titleB: "서로의 연결을 이해하세요.",
+    intro: "인공지능을 만드는 개념·역사·사람·위험·가능성을 하나로 연결된 세계에서 쉽고 체계적으로 탐색해 보세요.",
+    question: "무엇이 궁금한가요?",
+    placeholder: "AI에 관해 무엇이든 물어보세요…",
+    browse: "주제 둘러보기",
+    suggestion: "추천 질문 보기",
+    mapLabel: "인터랙티브 지식 지도",
+    mapTitle: "어디서든 시작하고, 모든 연결을 따라가세요.",
+    history: "AI 역사",
+    historySub: "논리학에서 학습하는 기계까지",
+    guide: "AI 가이드",
+    guideText: "AI를 쉬운 말로 설명하고, 준비가 되면 더 깊은 원리까지 안내해 드립니다.",
+    selected: "선택한 개념",
+    close: "닫기",
+    level: "설명 난이도",
+    levels: ["입문", "중급", "고급"],
+    established: "확립된 개념",
+    askAbout: "이 개념 질문하기",
+    guided: ["AI·머신러닝·딥러닝은 무엇이 다른가요?", "대규모 언어 모델은 어떻게 작동하나요?", "어떤 AI 직무가 저와 맞을까요?"],
+    answerIntro: "쉽게 시작해 보겠습니다:",
+    searching: ["질문을 이해하고 있습니다…", "AI Universe 지식을 확인하고 있습니다…", "필요한 최신 자료를 검색하고 있습니다…", "출처를 비교하고 있습니다…"],
+    cancel: "검색 중지",
+    sources: "확인한 출처",
+    checked: "확인 시각",
+    webChecked: "웹 확인 완료",
+    knowledgeChecked: "지식베이스 확인",
+    error: "질문을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    answerFallback: "AI는 사람의 지능과 관련된 일을 수행하는 시스템을 연구하고 만드는 넓은 분야입니다. 기초 개념부터 시작해 머신러닝, 딥러닝, 오늘날의 생성형 AI 순서로 지도를 따라가면 전체 구조를 이해하기 쉽습니다.",
+    journey: "주제를 선택하거나 직접 질문해 보세요.",
+    journeySub: "AI를 이해하는 여정이 여기서 시작됩니다.",
+    footer: "AI의 과거·현재·미래를 체계적이고 근거 중심으로 안내합니다.",
+    noNews: "정보의 확실성을 구분하며, 가짜 최신 통계나 뉴스를 사용하지 않습니다.",
+  },
+};
+
+const topics = [
+  { id: "history", icon: "⌛", color: "gold", en: "AI History", ko: "AI 역사", enD: "How ideas became intelligent machines.", koD: "생각이 지능형 기계로 발전한 과정입니다." },
+  { id: "foundations", icon: "◈", color: "blue", en: "Foundations", ko: "기초", enD: "Logic, mathematics, data and algorithms.", koD: "논리·수학·데이터·알고리즘의 토대입니다." },
+  { id: "ml", icon: "⌁", color: "cyan", en: "Machine Learning", ko: "머신러닝", enD: "Systems that learn patterns from data.", koD: "데이터에서 패턴을 배우는 시스템입니다." },
+  { id: "deep", icon: "◎", color: "violet", en: "Deep Learning", ko: "딥러닝", enD: "Layered neural networks at scale.", koD: "대규모 다층 신경망을 활용하는 학습입니다." },
+  { id: "gen", icon: "✦", color: "cyan", en: "Generative AI", ko: "생성형 AI", enD: "AI that creates text, images and more.", koD: "글·이미지 등 새 콘텐츠를 만드는 AI입니다." },
+  { id: "llm", icon: "Aa", color: "blue", en: "Large Language Models", ko: "대규모 언어 모델", enD: "Models that predict and generate language.", koD: "언어를 예측하고 생성하는 모델입니다." },
+  { id: "agents", icon: "✣", color: "violet", en: "AI Agents", ko: "AI 에이전트", enD: "Systems that plan, use tools and act.", koD: "계획하고 도구를 사용해 행동하는 시스템입니다." },
+  { id: "current", icon: "◉", color: "green", en: "Current AI", ko: "현재의 AI", enD: "Today’s capabilities and limitations.", koD: "오늘날 AI의 능력과 한계를 살펴봅니다." },
+  { id: "future", icon: "↗", color: "orange", en: "Future AI", ko: "미래의 AI", enD: "Evolving, experimental and speculative paths.", koD: "진화·실험·전망 단계의 미래를 구분합니다." },
+  { id: "ethics", icon: "◇", color: "gold", en: "Ethics & Safety", ko: "윤리와 안전", enD: "Bias, privacy, governance and responsibility.", koD: "편향·개인정보·거버넌스·책임을 다룹니다." },
+];
+
+const timeline = [
+  ["1950", "Turing’s imitation game", "튜링의 모방 게임"],
+  ["1956", "The field receives the name ‘AI’", "‘인공지능’이라는 분야의 탄생"],
+  ["1980s", "Expert systems and AI winter", "전문가 시스템과 AI 겨울"],
+  ["2012", "Deep learning breakthrough", "딥러닝의 결정적 도약"],
+  ["2017", "Transformer architecture", "트랜스포머 구조의 등장"],
+  ["2020s", "Generative and multimodal AI", "생성형·멀티모달 AI 시대"],
+];
+
+const learningCards = [
+  ["01", "AI Basics", "AI 기초", "Build a strong mental model without the jargon.", "전문용어에 갇히지 않고 핵심 구조를 이해합니다."],
+  ["02", "How Models Learn", "모델은 어떻게 배우나", "Follow data through training, prediction and evaluation.", "데이터가 학습·예측·평가로 이어지는 과정을 봅니다."],
+  ["03", "Generative AI", "생성형 AI", "Understand tokens, transformers, prompting and RAG.", "토큰·트랜스포머·프롬프팅·RAG를 이해합니다."],
+  ["04", "AI in Practice", "AI 실전 활용", "Apply AI to business, creation, research and code.", "사업·창작·연구·개발에 AI를 적용합니다."],
+];
+
+const roles = [
+  ["AI Research Scientist", "AI 연구 과학자", "Develops new methods and investigates fundamental questions.", "새로운 방법을 개발하고 근본적인 연구 문제를 탐구합니다."],
+  ["ML Engineer", "머신러닝 엔지니어", "Builds, deploys and maintains learning systems.", "학습 시스템을 만들고 배포·운영합니다."],
+  ["AI Product Manager", "AI 프로덕트 매니저", "Connects user needs, business goals and AI capabilities.", "사용자 요구·사업 목표·AI 역량을 연결합니다."],
+  ["AI Safety Specialist", "AI 안전 전문가", "Evaluates risk and helps systems behave responsibly.", "위험을 평가하고 시스템의 책임 있는 작동을 돕습니다."],
+];
+
+export default function Home() {
+  const [lang, setLang] = useState<Lang>("en");
+  const [section, setSection] = useState<Section>("explore");
+  const [selected, setSelected] = useState(topics[5]);
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [citations, setCitations] = useState<Array<{title:string;url:string}>>([]);
+  const [checkedAt, setCheckedAt] = useState("");
+  const [usedWeb, setUsedWeb] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
+  const [askError, setAskError] = useState("");
+  const [level, setLevel] = useState(0);
+  const [menu, setMenu] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const t = copy[lang];
+  const title = (item: typeof topics[number]) => lang === "en" ? item.en : item.ko;
+  const description = (item: typeof topics[number]) => lang === "en" ? item.enD : item.koD;
+
+  const activeContent = useMemo(() => {
+    if (section === "learn") return "learn";
+    if (section === "timeline") return "timeline";
+    if (section === "careers") return "careers";
+    if (section === "resources") return "resources";
+    return "explore";
+  }, [section]);
+
+  async function submit(e?: FormEvent, overrideQuestion?: string) {
+    e?.preventDefault();
+    const q = (overrideQuestion ?? question).trim();
+    if (!q || loading) return;
+    setQuestion(q);
+    setAnswer("");
+    setCitations([]);
+    setCheckedAt("");
+    setAskError("");
+    setLoading(true);
+    setLoadingStep(0);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const timer = window.setInterval(() => setLoadingStep(step => Math.min(step + 1, 3)), 1700);
+    try {
+      const response = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: q,
+          language: lang,
+          level: (["beginner", "intermediate", "advanced"] as const)[level],
+          selectedTopic: title(selected),
+        }),
+        signal: controller.signal,
+      });
+      const data = await response.json() as {
+        answer?: string;
+        citations?: Array<{title:string;url:string}>;
+        checkedAt?: string;
+        usedWeb?: boolean;
+        error?: string;
+      };
+      if (!response.ok || !data.answer) throw new Error(data.error || t.error);
+      setAnswer(data.answer);
+      setCitations(data.citations ?? []);
+      setCheckedAt(data.checkedAt ?? "");
+      setUsedWeb(Boolean(data.usedWeb));
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
+      setAskError(error instanceof Error ? error.message : t.error);
+    } finally {
+      window.clearInterval(timer);
+      abortRef.current = null;
+      setLoading(false);
+    }
+  }
+
+  function chooseQuestion(q: string) {
+    void submit(undefined, q);
+  }
+
+  function changeLanguage(next: Lang) {
+    setLang(next);
+    setAnswer("");
+    setCitations([]);
+    setAskError("");
+    setQuestion("");
+  }
+
+  return (
+    <main className="universe-shell">
+      <div className="star-field" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div>
+      <header className="topbar">
+        <button className="brand" onClick={() => setSection("explore")} aria-label="AI Universe home">
+          <span className="brand-mark">A<span>I</span></span>
+          <span><b>{lang === "en" ? "AI Universe" : "AI 유니버스"}</b><small>{t.tagline}</small></span>
+        </button>
+        <button className="menu-button" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Open navigation">☰</button>
+        <nav className={menu ? "nav open" : "nav"} aria-label="Main navigation">
+          {(["explore", "learn", "timeline", "careers", "resources"] as Section[]).map((item, i) => (
+            <button key={item} className={section === item ? "active" : ""} onClick={() => {setSection(item); setMenu(false);}}>{t.nav[i]}</button>
+          ))}
+        </nav>
+        <div className="language" aria-label="Language selector">
+          <button className={lang === "en" ? "active" : ""} onClick={() => changeLanguage("en")}>EN</button>
+          <span>/</span>
+          <button className={lang === "ko" ? "active" : ""} onClick={() => changeLanguage("ko")}>KR</button>
+        </div>
+      </header>
+
+      {activeContent === "explore" && <>
+        <section className="hero-copy">
+          <p>{t.eyebrow}</p>
+          <h1>{t.titleA}<br/><span>{t.titleB}</span></h1>
+          <div>{t.intro}</div>
+        </section>
+
+        <section className="explorer" aria-label="AI knowledge explorer">
+          <aside className="timeline-rail glass-card">
+            <div className="panel-kicker">{t.history}</div><p>{t.historySub}</p>
+            <div className="mini-timeline">
+              {timeline.slice(0,5).map((item, i) => <button key={item[0]} onClick={() => setSection("timeline")}><i className={`dot d${i}`}/><span><b>{item[0]}</b><small>{lang === "en" ? item[1] : item[2]}</small></span></button>)}
+            </div>
+            <button className="soft-button" onClick={() => setSection("timeline")}>{lang === "en" ? "View full timeline" : "전체 역사 보기"} <span>→</span></button>
+          </aside>
+
+          <div className="knowledge-stage">
+            <div className="map-heading"><span>{t.mapLabel}</span><b>{t.mapTitle}</b></div>
+            <div className="orbit orbit-a"/><div className="orbit orbit-b"/><div className="orbit orbit-c"/>
+            <div className="topic-orbit">
+              {topics.map((item, i) => <button key={item.id} className={`topic-node node-${i} ${selected.id === item.id ? "selected" : ""}`} onClick={() => setSelected(item)}>
+                <span className={`node-icon ${item.color}`}>{item.icon}</span><b>{title(item)}</b><small>{description(item)}</small>
+              </button>)}
+            </div>
+            <form className="ask-card glass-card" onSubmit={submit}>
+              <span className="ask-spark">✦</span>
+              <h2>{t.question}</h2>
+              <div className="question-box"><input value={question} onChange={e => setQuestion(e.target.value)} placeholder={t.placeholder} aria-label={t.placeholder} maxLength={1200} disabled={loading}/><button aria-label="Send question" disabled={loading}>{loading ? "···" : "➤"}</button></div>
+              <div className="ask-actions"><button type="button" onClick={() => document.getElementById("topic-grid")?.scrollIntoView({behavior:"smooth"})}>⌘ {t.browse}</button><span>or</span><button type="button" onClick={() => chooseQuestion(t.guided[0])}>◇ {t.suggestion}</button></div>
+              {loading && <div className="search-progress" role="status"><span className="search-spinner"/><b>{t.searching[loadingStep]}</b><button type="button" onClick={() => abortRef.current?.abort()}>{t.cancel}</button></div>}
+              {askError && <div className="ask-error" role="alert"><span>!</span><p>{askError}</p><button type="button" onClick={() => void submit()}>{lang === "en" ? "Try again" : "다시 시도"}</button></div>}
+              {answer && <div className="answer-card live-answer" role="status">
+                <div className="answer-meta"><b>{t.answerIntro}</b><span className={usedWeb ? "web-badge" : "kb-badge"}>{usedWeb ? `✓ ${t.webChecked}` : `✓ ${t.knowledgeChecked}`}</span></div>
+                <p>{answer}</p>
+                {checkedAt && <small>{t.checked}: {new Date(checkedAt).toLocaleString(lang === "ko" ? "ko-KR" : "en-US")}</small>}
+                {citations.length > 0 && <div className="source-list"><strong>{t.sources}</strong>{citations.map((source, i) => <a href={source.url} target="_blank" rel="noreferrer" key={source.url}><span>{i + 1}</span><div><b>{source.title}</b><small>{new URL(source.url).hostname}</small></div><i>↗</i></a>)}</div>}
+              </div>}
+            </form>
+          </div>
+
+          <aside className="guide-column">
+            <div className="guide-card glass-card"><div><span className="status-dot"/>{t.guide}<em>Beta</em></div><div className="bot"><span className="antenna a1"/><span className="antenna a2"/><b>⌁</b></div><p>{t.guideText}</p></div>
+            <div className="trust-card glass-card"><span>✓</span><div><b>{lang === "en" ? "Evidence-aware" : "근거 중심 정보"}</b><p>{t.noNews}</p></div></div>
+          </aside>
+        </section>
+
+        <section className="selected-strip glass-card" aria-live="polite">
+          <span className={`node-icon ${selected.color}`}>{selected.icon}</span>
+          <div><small>{t.selected} · {t.established}</small><b>{title(selected)}</b><p>{description(selected)}</p></div>
+          <div className="level"><span>{t.level}</span>{t.levels.map((l,i)=><button key={l} className={level===i?"active":""} onClick={()=>setLevel(i)}>{l}</button>)}</div>
+          <button className="primary-button" onClick={() => {const q = lang === "en" ? `Explain ${selected.en}` : `${selected.ko}을 설명해 주세요`; window.scrollTo({top:200,behavior:"smooth"}); void submit(undefined, q);}}>{t.askAbout} →</button>
+        </section>
+
+        <section id="topic-grid" className="quick-section">
+          <div className="section-head"><div><span>{lang === "en" ? "EXPLORE BY TOPIC" : "주제별 탐색"}</span><h2>{lang === "en" ? "Build your own path through AI" : "나만의 AI 학습 경로를 만들어 보세요"}</h2></div><p>{lang === "en" ? "Every concept connects to its history, uses, careers, risks and future." : "모든 개념은 역사·활용·직무·위험·미래와 연결됩니다."}</p></div>
+          <div className="topic-grid">{topics.map(item => <button key={item.id} onClick={() => {setSelected(item); window.scrollTo({top:300,behavior:"smooth"});}}><span className={`node-icon ${item.color}`}>{item.icon}</span><div><b>{title(item)}</b><p>{description(item)}</p></div><i>↗</i></button>)}</div>
+        </section>
+      </>}
+
+      {activeContent !== "explore" && <section className="content-page">
+        <button className="back" onClick={() => setSection("explore")}>← {lang === "en" ? "Back to the universe" : "전체 지도로 돌아가기"}</button>
+        {activeContent === "learn" && <><div className="page-intro"><span>LEARNING PATHS</span><h1>{lang === "en" ? "Learn AI in the right order." : "AI를 올바른 순서로 배우세요."}</h1><p>{lang === "en" ? "A guided path from first principles to practical applications — at your pace." : "기초 원리부터 실제 활용까지, 나의 속도에 맞춘 단계형 학습 과정입니다."}</p></div><div className="learning-grid">{learningCards.map(c=><article key={c[0]}><span>{c[0]}</span><h2>{lang === "en" ? c[1] : c[2]}</h2><p>{lang === "en" ? c[3] : c[4]}</p><button>{lang === "en" ? "Start module" : "학습 시작"} →</button></article>)}</div></>}
+        {activeContent === "timeline" && <><div className="page-intro"><span>PAST · PRESENT · FUTURE</span><h1>{lang === "en" ? "The story of artificial intelligence" : "인공지능이 걸어온 길"}</h1><p>{lang === "en" ? "Progress was never a straight line. Explore the breakthroughs, winters and turning points." : "AI의 발전은 직선이 아니었습니다. 도약과 침체, 중요한 전환점을 살펴보세요."}</p></div><div className="full-timeline">{timeline.map((e,i)=><article key={e[0]}><i/><time>{e[0]}</time><div><span>{i < 5 ? t.established : (lang === "en" ? "Evolving" : "변화 중")}</span><h2>{lang === "en" ? e[1] : e[2]}</h2></div></article>)}</div></>}
+        {activeContent === "careers" && <><div className="page-intro"><span>ROLES & CAREERS</span><h1>{lang === "en" ? "Find your place in the AI ecosystem." : "AI 생태계에서 나의 자리를 찾아보세요."}</h1><p>{lang === "en" ? "AI needs researchers, builders, communicators, designers and responsible decision-makers." : "AI에는 연구자·개발자·기획자·디자이너·책임 있는 의사결정자가 모두 필요합니다."}</p></div><div className="role-grid">{roles.map((r,i)=><article key={r[0]}><span>0{i+1}</span><h2>{lang === "en" ? r[0] : r[1]}</h2><p>{lang === "en" ? r[2] : r[3]}</p><button>{lang === "en" ? "Explore role" : "직무 알아보기"} →</button></article>)}</div></>}
+        {activeContent === "resources" && <><div className="page-intro"><span>TRUSTED STARTING POINTS</span><h1>{lang === "en" ? "Resources for deeper learning" : "더 깊은 학습을 위한 자료"}</h1><p>{lang === "en" ? "A structured index for concepts, practical skills and responsible AI." : "개념·실무 능력·책임 있는 AI를 위한 체계적인 자료 모음입니다."}</p></div><div className="resource-list">{[["AI Glossary","AI 용어사전","40+ connected foundational concepts","40개 이상의 핵심 개념"],["Practical Guides","실전 가이드","Prompting, RAG, agents and evaluation","프롬프팅·RAG·에이전트·평가"],["Safety & Ethics","안전과 윤리","Bias, privacy, copyright and governance","편향·개인정보·저작권·거버넌스"]].map((r,i)=><article key={r[0]}><span>{["Aa","⌘","◇"][i]}</span><div><h2>{lang === "en"?r[0]:r[1]}</h2><p>{lang === "en"?r[2]:r[3]}</p></div><button>→</button></article>)}</div></>}
+      </section>}
+
+      <footer><div className="brand-mark small">A<span>I</span></div><p>{t.footer}</p><span>AI Universe · 2026</span></footer>
+    </main>
+  );
+}
