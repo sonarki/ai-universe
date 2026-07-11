@@ -151,6 +151,15 @@ const copy = {
     askedLabel: "Question",
     askChip: "Ask AI",
     reopenAnswer: "View last answer",
+    glossaryTitle: "AI Glossary",
+    glossaryHint: "Essential terms everyone should know, A to Z. Pick a word to see what it means.",
+    guidesTitle: "Practical Guides",
+    guidesHint: "Pick a topic and the AI guide will walk you through it.",
+    safetyTitle: "Safety & Ethics",
+    safetyHint: "Pick a topic to learn how to use AI safely and responsibly.",
+    searchPh: "Search…",
+    askMore: "Ask AI for a deeper explanation",
+    noResult: "No matches found.",
   },
   ko: {
     tagline: "배우고 · 이해하고 · 미래를 준비하다",
@@ -220,6 +229,15 @@ const copy = {
     askedLabel: "질문",
     askChip: "질문하기",
     reopenAnswer: "지난 답변 보기",
+    glossaryTitle: "AI 용어사전",
+    glossaryHint: "일반인이 꼭 알아야 할 핵심 용어를 알파벳순으로 모았습니다. 단어를 고르면 설명이 나옵니다.",
+    guidesTitle: "실전 가이드",
+    guidesHint: "주제를 고르면 AI 가이드가 단계별로 안내해 드립니다.",
+    safetyTitle: "안전과 윤리",
+    safetyHint: "주제를 고르면 AI를 안전하고 책임 있게 쓰는 법을 알려 드립니다.",
+    searchPh: "찾아보기…",
+    askMore: "AI에게 자세히 묻기",
+    noResult: "검색 결과가 없습니다.",
   },
 };
 
@@ -259,6 +277,64 @@ const roles = [
   ["AI Safety Specialist", "AI 안전 전문가", "Evaluates risk and helps systems behave responsibly.", "위험을 평가하고 시스템의 책임 있는 작동을 돕습니다."],
 ];
 
+// 일반인이 꼭 알아야 할 핵심 AI 용어 (알파벳순)
+const glossary = [
+  { term: "AGI", ko: "인공 일반 지능", enD: "Hypothetical AI that could perform almost any intellectual task a human can, across all domains.", koD: "사람이 하는 거의 모든 지적 작업을 수행할 수 있다고 가정하는 범용 인공지능입니다." },
+  { term: "AI", ko: "인공지능", enD: "Systems that perform tasks associated with human intelligence, like understanding language or recognizing images.", koD: "언어 이해, 이미지 인식처럼 사람의 지능과 관련된 일을 수행하는 시스템입니다." },
+  { term: "AI Agent", ko: "AI 에이전트", enD: "AI that plans, uses tools and takes multi-step actions toward a goal — not just answering questions.", koD: "단순 답변을 넘어 목표를 향해 계획하고 도구를 쓰며 여러 단계를 실행하는 AI입니다." },
+  { term: "Algorithm", ko: "알고리즘", enD: "A step-by-step set of rules a computer follows to solve a problem.", koD: "문제를 풀기 위해 컴퓨터가 따르는 단계별 규칙의 모음입니다." },
+  { term: "Alignment", ko: "정렬", enD: "Research and techniques for making AI act according to human intentions and values.", koD: "AI가 사람의 의도와 가치에 맞게 행동하도록 만드는 연구와 기술입니다." },
+  { term: "API", ko: "API", enD: "A way for programs to talk to each other — how apps connect to AI models.", koD: "프로그램끼리 소통하는 통로로, 앱이 AI 모델을 불러 쓰는 방식입니다." },
+  { term: "Bias", ko: "편향", enD: "Unfair patterns an AI learns from its data, leading to skewed or discriminatory results.", koD: "데이터에서 학습된 불공정한 경향으로, 치우친 결과를 만드는 원인입니다." },
+  { term: "Chatbot", ko: "챗봇", enD: "A program that converses in natural language, like ChatGPT.", koD: "ChatGPT처럼 자연어로 대화하는 프로그램입니다." },
+  { term: "Context Window", ko: "컨텍스트 윈도우", enD: "How much text an AI can consider at once in a conversation — its working memory.", koD: "AI가 한 번의 대화에서 기억할 수 있는 텍스트의 양, 즉 작업 기억입니다." },
+  { term: "Copilot", ko: "코파일럿", enD: "An AI assistant embedded in tools like documents, code editors or email to help as you work.", koD: "문서·코드·이메일 등 작업 도구 안에서 실시간으로 돕는 AI 비서입니다." },
+  { term: "Deep Learning", ko: "딥러닝", enD: "Machine learning using many-layered neural networks; the engine of modern AI.", koD: "여러 층의 신경망으로 학습하는 방식으로, 현대 AI의 핵심 기술입니다." },
+  { term: "Deepfake", ko: "딥페이크", enD: "AI-made fake images, video or audio that look and sound real.", koD: "실제처럼 보이고 들리도록 AI로 만든 가짜 이미지·영상·음성입니다." },
+  { term: "Fine-tuning", ko: "파인튜닝", enD: "Further training an existing model on specific data to specialize it.", koD: "이미 학습된 모델을 특정 데이터로 추가 학습시켜 특화하는 과정입니다." },
+  { term: "Generative AI", ko: "생성형 AI", enD: "AI that creates new content — text, images, audio, video or code.", koD: "글·이미지·음성·영상·코드 등 새로운 콘텐츠를 만들어내는 AI입니다." },
+  { term: "GPU", ko: "GPU", enD: "The chip that performs the massive parallel math AI needs; the key AI hardware.", koD: "AI에 필요한 대규모 병렬 연산을 처리하는 칩으로, 핵심 AI 하드웨어입니다." },
+  { term: "Hallucination", ko: "환각", enD: "When AI confidently states things that are false or made up.", koD: "AI가 사실이 아닌 내용을 그럴듯하게 지어내는 현상입니다." },
+  { term: "Inference", ko: "추론(실행)", enD: "Running a trained model to get answers — as opposed to training it.", koD: "학습이 끝난 모델을 실제로 실행해 답을 얻는 단계입니다." },
+  { term: "LLM", ko: "대규모 언어 모델", enD: "Large Language Model — AI trained on vast text to understand and generate language.", koD: "방대한 텍스트로 학습해 언어를 이해하고 생성하는 대규모 언어 모델입니다." },
+  { term: "Machine Learning", ko: "머신러닝", enD: "AI that learns patterns from data instead of following hand-written rules.", koD: "규칙을 직접 짜는 대신 데이터에서 패턴을 배우는 AI 방식입니다." },
+  { term: "Multimodal", ko: "멀티모달", enD: "AI that handles multiple formats — text, images, audio and video together.", koD: "텍스트·이미지·음성·영상을 함께 다루는 AI입니다." },
+  { term: "Neural Network", ko: "신경망", enD: "A brain-inspired structure of connected nodes that learns from examples.", koD: "뇌 신경망을 본떠 연결된 노드들이 예시에서 학습하는 구조입니다." },
+  { term: "On-device AI", ko: "온디바이스 AI", enD: "AI that runs on your phone or PC without sending data to the cloud.", koD: "데이터를 클라우드로 보내지 않고 휴대폰·PC에서 직접 실행되는 AI입니다." },
+  { term: "Open-source Model", ko: "오픈소스 모델", enD: "A model whose weights are public, so anyone can run or modify it.", koD: "가중치가 공개되어 누구나 내려받아 실행·수정할 수 있는 모델입니다." },
+  { term: "Prompt", ko: "프롬프트", enD: "The instruction or question you give an AI.", koD: "AI에게 주는 지시문 또는 질문입니다." },
+  { term: "Prompt Engineering", ko: "프롬프트 엔지니어링", enD: "Crafting prompts to get better, more reliable AI results.", koD: "더 좋고 안정적인 결과를 얻도록 프롬프트를 설계하는 기술입니다." },
+  { term: "RAG", ko: "검색 증강 생성", enD: "Retrieval-Augmented Generation — AI searches relevant documents first, then answers using them.", koD: "답하기 전에 관련 자료를 먼저 검색해 그 근거로 답변하는 방식입니다." },
+  { term: "Reasoning Model", ko: "추론 모델", enD: "A model that thinks through steps before answering; better at complex problems.", koD: "답하기 전에 단계적으로 생각하는 모델로, 복잡한 문제에 강합니다." },
+  { term: "Token", ko: "토큰", enD: "The small chunks of text AI processes — roughly parts of words; also how usage is billed.", koD: "AI가 처리하는 텍스트 조각 단위로, 사용량 과금의 기준이기도 합니다." },
+  { term: "Training Data", ko: "학습 데이터", enD: "The examples a model learns from; its quality shapes the AI's behavior.", koD: "모델이 학습하는 예시 데이터로, 품질이 AI의 성능과 성향을 좌우합니다." },
+  { term: "Transformer", ko: "트랜스포머", enD: "The 2017 architecture behind modern LLMs, using attention to weigh context.", koD: "'어텐션'으로 맥락을 파악하는 2017년 구조로, 현대 LLM의 기반입니다." },
+];
+
+// 실전 가이드 주제 (클릭 시 AI 가이드에게 질문)
+const practicalGuides = [
+  ["How to write good prompts", "프롬프트 잘 쓰는 법"],
+  ["Using AI at work", "업무에 AI 활용하기"],
+  ["Writing and summarizing with AI", "AI로 글쓰기·요약하기"],
+  ["Getting started with image generation", "이미지 생성 시작하기"],
+  ["AI search and fact-checking", "AI 검색과 사실 확인"],
+  ["Choosing the right AI tools", "나에게 맞는 AI 도구 고르기"],
+  ["Automating notes and email", "회의록·이메일 자동화"],
+  ["Using AI for data analysis", "데이터 분석에 AI 쓰기"],
+];
+
+// 안전과 윤리 주제 (클릭 시 AI 가이드에게 질문)
+const safetyTopics = [
+  ["How to spot deepfakes", "딥페이크 구별법"],
+  ["Protecting privacy when using AI", "개인정보 지키며 AI 쓰기"],
+  ["Understanding AI bias", "AI 편향 이해하기"],
+  ["AI and copyright", "AI와 저작권"],
+  ["Kids and AI safety", "아이들과 AI 안전"],
+  ["Spotting misinformation", "가짜뉴스·허위정보 판별"],
+  ["Dealing with AI hallucinations", "AI 환각 대처법"],
+  ["Principles of responsible AI use", "책임 있는 AI 사용 원칙"],
+];
+
 export default function Home() {
   const [lang, setLang] = useState<Lang>("en");
   const [section, setSection] = useState<Section>("explore");
@@ -286,6 +362,11 @@ export default function Home() {
   const [authName, setAuthName] = useState("");
   // 질문창: 평소엔 우측 상단 칩으로 접힘, 누르면 중앙에 펼쳐짐 (모든 페이지 공통)
   const [askOpen, setAskOpen] = useState(false);
+  // 자료 섹션: 용어사전 선택·섹션별 찾아보기 검색어
+  const [openTerm, setOpenTerm] = useState<string | null>(null);
+  const [glossQuery, setGlossQuery] = useState("");
+  const [guideQuery, setGuideQuery] = useState("");
+  const [safetyQuery, setSafetyQuery] = useState("");
   // 지식지도 노드 클릭 시: 혜성이 선을 그으며 선택 박스로 날아가고, 도착하면 박스가 번쩍임
   const [flight, setFlight] = useState<{ x1: number; y1: number; x2: number; y2: number; id: number } | null>(null);
   const [stripFlash, setStripFlash] = useState(false);
@@ -698,7 +779,57 @@ export default function Home() {
         {activeContent === "learn" && <><div className="page-intro"><span>LEARNING PATHS</span><h1>{lang === "en" ? "Learn AI in the right order." : "AI를 올바른 순서로 배우세요."}</h1><p>{lang === "en" ? "A guided path from first principles to practical applications — at your pace." : "기초 원리부터 실제 활용까지, 나의 속도에 맞춘 단계형 학습 과정입니다."}</p></div><div className="learning-grid">{learningCards.map(c=><article key={c[0]}><span>{c[0]}</span><h2>{lang === "en" ? c[1] : c[2]}</h2><p>{lang === "en" ? c[3] : c[4]}</p><button onClick={() => askFromPage(lang === "en" ? `I want to start the "${c[1]}" module. Give me a structured introduction and the first key concepts.` : `"${c[2]}" 모듈을 시작하고 싶어요. 전체 구성과 첫 핵심 개념을 알려 주세요.`)}>{lang === "en" ? "Start module" : "학습 시작"} →</button></article>)}</div></>}
         {activeContent === "timeline" && <><div className="page-intro"><span>PAST · PRESENT · FUTURE</span><h1>{lang === "en" ? "The story of artificial intelligence" : "인공지능이 걸어온 길"}</h1><p>{lang === "en" ? "Progress was never a straight line. Explore the breakthroughs, winters and turning points." : "AI의 발전은 직선이 아니었습니다. 도약과 침체, 중요한 전환점을 살펴보세요."}</p></div><div className="full-timeline">{timeline.map((e,i)=><article key={e[0]}><i/><time>{e[0]}</time><div><span>{i < 5 ? t.established : (lang === "en" ? "Evolving" : "변화 중")}</span><h2>{lang === "en" ? e[1] : e[2]}</h2></div></article>)}</div></>}
         {activeContent === "careers" && <><div className="page-intro"><span>ROLES & CAREERS</span><h1>{lang === "en" ? "Find your place in the AI ecosystem." : "AI 생태계에서 나의 자리를 찾아보세요."}</h1><p>{lang === "en" ? "AI needs researchers, builders, communicators, designers and responsible decision-makers." : "AI에는 연구자·개발자·기획자·디자이너·책임 있는 의사결정자가 모두 필요합니다."}</p></div><div className="role-grid">{roles.map((r,i)=><article key={r[0]}><span>0{i+1}</span><h2>{lang === "en" ? r[0] : r[1]}</h2><p>{lang === "en" ? r[2] : r[3]}</p><button onClick={() => askFromPage(lang === "en" ? `What does an ${r[0]} do? Explain the daily work, required skills and how to prepare for this role.` : `${r[1]}는 어떤 일을 하나요? 하는 일, 필요한 역량, 준비 방법을 알려 주세요.`)}>{lang === "en" ? "Explore role" : "직무 알아보기"} →</button></article>)}</div></>}
-        {activeContent === "resources" && <><div className="page-intro"><span>TRUSTED STARTING POINTS</span><h1>{lang === "en" ? "Resources for deeper learning" : "더 깊은 학습을 위한 자료"}</h1><p>{lang === "en" ? "A structured index for concepts, practical skills and responsible AI." : "개념·실무 능력·책임 있는 AI를 위한 체계적인 자료 모음입니다."}</p></div><div className="resource-list">{[["AI Glossary","AI 용어사전","40+ connected foundational concepts","40개 이상의 핵심 개념"],["Practical Guides","실전 가이드","Prompting, RAG, agents and evaluation","프롬프팅·RAG·에이전트·평가"],["Safety & Ethics","안전과 윤리","Bias, privacy, copyright and governance","편향·개인정보·저작권·거버넌스"]].map((r,i)=><article key={r[0]}><span>{["Aa","⌘","◇"][i]}</span><div><h2>{lang === "en"?r[0]:r[1]}</h2><p>{lang === "en"?r[2]:r[3]}</p></div><button aria-label={lang === "en" ? `Open ${r[0]}` : `${r[1]} 열기`} onClick={() => askFromPage(lang === "en" ? `Act as my "${r[0]}" resource: ${r[2]}. Give me a practical starting guide.` : `"${r[1]}" 자료가 되어 주세요: ${r[3]}. 실용적인 입문 안내를 해 주세요.`)}>→</button></article>)}</div></>}
+        {activeContent === "resources" && <>
+          <div className="page-intro"><span>TRUSTED STARTING POINTS</span><h1>{lang === "en" ? "Resources for deeper learning" : "더 깊은 학습을 위한 자료"}</h1><p>{lang === "en" ? "A structured index for concepts, practical skills and responsible AI." : "개념·실무 능력·책임 있는 AI를 위한 체계적인 자료 모음입니다."}</p></div>
+          <div className="resource-sections">
+
+            <section className="resource-block glass-card">
+              <div className="resource-head"><span className="node-icon blue">Aa</span><div><h2>{t.glossaryTitle}</h2><p>{t.glossaryHint}</p></div></div>
+              <input className="resource-search" type="search" value={glossQuery} onChange={e => setGlossQuery(e.target.value)} placeholder={t.searchPh} aria-label={`${t.glossaryTitle} ${t.searchPh}`}/>
+              {(() => {
+                const q = glossQuery.trim().toLowerCase();
+                const filtered = glossary.filter(g => !q || g.term.toLowerCase().includes(q) || g.ko.includes(glossQuery.trim()) || g.enD.toLowerCase().includes(q) || g.koD.includes(glossQuery.trim()));
+                const open = glossary.find(g => g.term === openTerm);
+                return <>
+                  <div className="term-chips">{filtered.map(g => <button key={g.term} className={openTerm === g.term ? "term-chip active" : "term-chip"} onClick={() => setOpenTerm(openTerm === g.term ? null : g.term)}>{g.term}{lang === "ko" && g.ko !== g.term ? <small> · {g.ko}</small> : null}</button>)}</div>
+                  {filtered.length === 0 && <p className="no-result">{t.noResult}</p>}
+                  {open && (filtered.some(g => g.term === open.term)) && <div className="term-detail">
+                    <b>{open.term}{lang === "ko" && open.ko !== open.term ? ` (${open.ko})` : ""}</b>
+                    <p>{lang === "en" ? open.enD : open.koD}</p>
+                    <button className="primary-button" onClick={() => askFromPage(lang === "en" ? `Explain "${open.term}" in plain language with a real-life example.` : `"${open.term}(${open.ko})"을(를) 일상 예시와 함께 쉽게 설명해 주세요.`)}>{t.askMore} →</button>
+                  </div>}
+                </>;
+              })()}
+            </section>
+
+            <section className="resource-block glass-card">
+              <div className="resource-head"><span className="node-icon mint">⌘</span><div><h2>{t.guidesTitle}</h2><p>{t.guidesHint}</p></div></div>
+              <input className="resource-search" type="search" value={guideQuery} onChange={e => setGuideQuery(e.target.value)} placeholder={t.searchPh} aria-label={`${t.guidesTitle} ${t.searchPh}`}/>
+              {(() => {
+                const q = guideQuery.trim().toLowerCase();
+                const filtered = practicalGuides.filter(g => !q || g[0].toLowerCase().includes(q) || g[1].includes(guideQuery.trim()));
+                return <>
+                  <div className="term-chips">{filtered.map(g => <button key={g[0]} className="term-chip topic" onClick={() => askFromPage(lang === "en" ? `Give me a practical step-by-step guide: ${g[0]}.` : `실용적인 단계별 가이드를 알려 주세요: ${g[1]}.`)}>{lang === "en" ? g[0] : g[1]}<i>→</i></button>)}</div>
+                  {filtered.length === 0 && <p className="no-result">{t.noResult}</p>}
+                </>;
+              })()}
+            </section>
+
+            <section className="resource-block glass-card">
+              <div className="resource-head"><span className="node-icon rose">◇</span><div><h2>{t.safetyTitle}</h2><p>{t.safetyHint}</p></div></div>
+              <input className="resource-search" type="search" value={safetyQuery} onChange={e => setSafetyQuery(e.target.value)} placeholder={t.searchPh} aria-label={`${t.safetyTitle} ${t.searchPh}`}/>
+              {(() => {
+                const q = safetyQuery.trim().toLowerCase();
+                const filtered = safetyTopics.filter(g => !q || g[0].toLowerCase().includes(q) || g[1].includes(safetyQuery.trim()));
+                return <>
+                  <div className="term-chips">{filtered.map(g => <button key={g[0]} className="term-chip topic" onClick={() => askFromPage(lang === "en" ? `Explain for everyday users: ${g[0]}. Include practical tips.` : `일반 사용자 눈높이로 설명해 주세요: ${g[1]}. 실천 팁도 함께요.`)}>{lang === "en" ? g[0] : g[1]}<i>→</i></button>)}</div>
+                  {filtered.length === 0 && <p className="no-result">{t.noResult}</p>}
+                </>;
+              })()}
+            </section>
+
+          </div>
+        </>}
       </section>}
 
       <footer><div className="brand-mark small">A<span>I</span></div><p>{t.footer}</p><span>AI Universe · 2026</span></footer>
