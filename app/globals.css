@@ -382,3 +382,10 @@ html,body{width:100vw;overflow-x:hidden;font-size:14px}
 
 /* 모바일 미니 은하계에서 코어 라벨 위치 보정 */
 @media (max-width:900px){.core-label{top:50%}}
+
+/* 로봇 눈웃음 얼굴 (기존 CSS 로봇 + 스마일 눈) */
+.bot b{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.bot-eyes{display:flex;gap:11px}
+.bot-eyes i{width:13px;height:7px;border-top:3px solid #53ecff;border-radius:50% 50% 0 0/100% 100% 0 0;box-shadow:0 -1px 8px rgba(83,236,255,.85);animation:eye-glow 3.2s ease-in-out infinite}
+.bot-smile{width:9px;height:5px;border-bottom:2.5px solid #53ecff;border-radius:0 0 50% 50%/0 0 100% 100%;box-shadow:0 1px 6px rgba(83,236,255,.7)}
+@keyframes eye-glow{0%,100%{opacity:.8}50%{opacity:1;filter:drop-shadow(0 0 4px rgba(83,236,255,.9))}}
