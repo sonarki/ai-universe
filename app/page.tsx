@@ -429,6 +429,8 @@ export default function Home() {
   // 패널 머리글 드래그로 이동 (버튼 클릭은 제외, 화면 밖으로 나가지 않게 제한)
   function startPanelDrag(e: ReactPointerEvent<HTMLDivElement>) {
     if (isDocked) return;
+    // 모바일(900px 이하)에서는 하단 시트 고정 — 드래그 비활성
+    if (window.innerWidth <= 900) return;
     if ((e.target as HTMLElement).closest("button")) return;
     const panel = panelRef.current;
     if (!panel) return;
@@ -846,10 +848,6 @@ export default function Home() {
           <animateMotion dur="0.68s" fill="freeze" calcMode="spline" keySplines="0.3 0 0.7 1" keyTimes="0;1" path={`M ${flight.x1} ${flight.y1} L ${flight.x2} ${flight.y2}`}/>
         </g>
       </svg>}
-
-      {!askOpen && <button className="ask-chip" onClick={() => setAskOpen(true)} aria-label={t.question}>
-        <span className="ask-chip-inner"><i>✦</i>{t.askChip}</span>
-      </button>}
 
       {askOpen && <div className="ask-overlay" role="dialog" aria-modal="false" aria-label={t.question}>
         <form className="ask-float glass-card" onSubmit={submit}>

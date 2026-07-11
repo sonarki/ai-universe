@@ -302,3 +302,33 @@ footer p{font-size:.88rem}
 
 /* 3. 스크롤 트리거: 최상단에서는 천체 정지, 스크롤 시 깨어남 (모션 스위치가 상위 규칙) */
 .space-frozen .planet-ring,.space-frozen .core-glow,.space-frozen .orbit,.space-frozen .planet{animation-play-state:paused!important}
+
+/* ==========================================
+   모바일 반응형 아키텍처 (900px 이하)
+   ========================================== */
+@media (max-width:900px){
+/* 1. 가로 오버플로 전역 차단 + 모바일 가독 기준 폰트 */
+html,body{width:100vw;overflow-x:hidden;font-size:14px}
+
+/* 2. 히어로 타이포 축소 */
+.hero-copy h1{font-size:1.9rem;line-height:1.3;text-align:center}
+.page-intro h1{font-size:1.7rem;line-height:1.3}
+
+/* 3. 유리카드 유동폭 (답변 패널·모달 제외한 일반 카드) */
+.timeline-rail,.guide-card,.trust-card,.progress-card,.selected-strip,.resource-block,.robot-guide-dashboard{width:100%;max-width:100%;margin-left:auto;margin-right:auto}
+
+/* 4. 모바일 미니 은하계 (숨김 대신 축소 밴드로 표시) */
+.celestial{display:block;position:relative;inset:auto;width:100%;height:230px;margin:2px 0 12px;transform:scale(.8)}
+.core-glow{top:50%}
+.planet-ring{top:50%}
+
+/* 5. 지도 노드 2열 그리드 (세로 늘어짐 압축) */
+.topic-orbit{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.topic-node{width:100%}
+
+/* 6. 답변 패널 = 하단 시트 (드래그·리사이즈 억제) */
+.answer-panel{width:92vw!important;height:70vh!important;position:fixed!important;bottom:3vh!important;left:4vw!important;top:auto!important;right:auto!important;transform:none!important;resize:none!important;border-radius:16px!important}
+.answer-panel .resize-corner{display:none}
+.answer-panel .panel-hint{display:none}
+.universe-shell.docked-mode{padding-right:0}
+}
