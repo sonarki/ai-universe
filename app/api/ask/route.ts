@@ -27,7 +27,11 @@ Use this seed for established fundamentals. For current models, products, people
 `;
 
 function isRateLimited(request: Request) {
-  const ip = request.headers.get("CF-Connecting-IP") ?? "anonymous";
+  // Vercel은 클라이언트 IP를 x-forwarded-for로 전달 (첫 항목이 실제 클라이언트)
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim()
+    || request.headers.get("x-real-ip")
+    || request.headers.get("CF-Connecting-IP")
+    || "anonymous";
   const now = Date.now();
   const recent = (requestLog.get(ip) ?? []).filter((time) => now - time < WINDOW_MS);
   if (recent.length >= MAX_REQUESTS) return true;

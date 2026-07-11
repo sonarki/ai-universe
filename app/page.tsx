@@ -1,9 +1,86 @@
 "use client";
 
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, ReactNode, useMemo, useRef, useState } from "react";
 
 type Lang = "en" | "ko";
 type Section = "explore" | "learn" | "timeline" | "careers" | "resources";
+
+// 답변 텍스트의 인라인 마크다운(링크·굵게·코드)을 React 요소로 변환
+function renderInline(text: string, keyPrefix: string): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  const pattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|\*\*([^*]+)\*\*|`([^`]+)`/g;
+  let last = 0;
+  let index = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > last) nodes.push(text.slice(last, match.index));
+    if (match[1] && match[2]) nodes.push(<a key={`${keyPrefix}-${index}`} href={match[2]} target="_blank" rel="noreferrer">{match[1]}</a>);
+    else if (match[3]) nodes.push(<b key={`${keyPrefix}-${index}`}>{match[3]}</b>);
+    else if (match[4]) nodes.push(<code key={`${keyPrefix}-${index}`}>{match[4]}</code>);
+    last = match.index + match[0].length;
+    index++;
+  }
+  if (last < text.length) nodes.push(text.slice(last));
+  return nodes;
+}
+
+// AI 답변의 마크다운(제목·표·목록·문단)을 안전하게 렌더링 (HTML 삽입 없음)
+function MarkdownAnswer({ text }: { text: string }) {
+  const blocks: ReactNode[] = [];
+  const lines = text.split(/\r?\n/);
+  let i = 0;
+  let key = 0;
+  const isHeading = (s: string) => /^#{1,4}\s/.test(s);
+  const isTableRow = (s: string) => s.startsWith("|");
+  const isListItem = (s: string) => /^[-*•]\s/.test(s) || /^\d+[.)]\s/.test(s);
+  while (i < lines.length) {
+    const line = lines[i].trim();
+    if (!line) { i++; continue; }
+    if (isHeading(line)) {
+      blocks.push(<h3 key={key++}>{renderInline(line.replace(/^#{1,4}\s*/, ""), `h${key}`)}</h3>);
+      i++;
+      continue;
+    }
+    if (isTableRow(line)) {
+      const rows: string[][] = [];
+      while (i < lines.length && isTableRow(lines[i].trim())) {
+        const cells = lines[i].trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(cell => cell.trim());
+        if (!cells.every(cell => /^:?-{2,}:?$/.test(cell))) rows.push(cells);
+        i++;
+      }
+      blocks.push(
+        <div className="answer-table-wrap" key={key++}>
+          <table>
+            {rows.length > 0 && <thead><tr>{rows[0].map((cell, ci) => <th key={ci}>{renderInline(cell, `th${key}-${ci}`)}</th>)}</tr></thead>}
+            <tbody>{rows.slice(1).map((row, ri) => <tr key={ri}>{row.map((cell, ci) => <td key={ci}>{renderInline(cell, `td${key}-${ri}-${ci}`)}</td>)}</tr>)}</tbody>
+          </table>
+        </div>
+      );
+      continue;
+    }
+    if (isListItem(line)) {
+      const items: string[] = [];
+      const ordered = /^\d+[.)]\s/.test(line);
+      while (i < lines.length && isListItem(lines[i].trim())) {
+        items.push(lines[i].trim().replace(/^([-*•]|\d+[.)])\s*/, ""));
+        i++;
+      }
+      const children = items.map((item, ii) => <li key={ii}>{renderInline(item, `li${key}-${ii}`)}</li>);
+      blocks.push(ordered ? <ol key={key++}>{children}</ol> : <ul key={key++}>{children}</ul>);
+      continue;
+    }
+    const paragraph: string[] = [line];
+    i++;
+    while (i < lines.length) {
+      const next = lines[i].trim();
+      if (!next || isHeading(next) || isTableRow(next) || isListItem(next)) break;
+      paragraph.push(next);
+      i++;
+    }
+    blocks.push(<p key={key++}>{renderInline(paragraph.join(" "), `p${key}`)}</p>);
+  }
+  return <div className="answer-body">{blocks}</div>;
+}
 
 const copy = {
   en: {
@@ -261,7 +338,7 @@ export default function Home() {
               {askError && <div className="ask-error" role="alert"><span>!</span><p>{askError}</p><button type="button" onClick={() => void submit()}>{lang === "en" ? "Try again" : "다시 시도"}</button></div>}
               {answer && <div className="answer-card live-answer" role="status">
                 <div className="answer-meta"><b>{t.answerIntro}</b><span className={usedWeb ? "web-badge" : "kb-badge"}>{usedWeb ? `✓ ${t.webChecked}` : `✓ ${t.knowledgeChecked}`}</span></div>
-                <p>{answer}</p>
+                <MarkdownAnswer text={answer}/>
                 {checkedAt && <small>{t.checked}: {new Date(checkedAt).toLocaleString(lang === "ko" ? "ko-KR" : "en-US")}</small>}
                 {citations.length > 0 && <div className="source-list"><strong>{t.sources}</strong>{citations.map((source, i) => <a href={source.url} target="_blank" rel="noreferrer" key={source.url}><span>{i + 1}</span><div><b>{source.title}</b><small>{new URL(source.url).hostname}</small></div><i>↗</i></a>)}</div>}
               </div>}
