@@ -471,6 +471,22 @@ export default function Home() {
   }
 
   useEffect(() => {
+    // 고정 설계폭(1200px) 뷰포트: 기기 화면폭에 맞는 초기 배율을 계산해 데스크톱 구도를 그대로 축소 표시
+    const meta = document.querySelector('meta[name="viewport"]');
+    const applyViewportScale = () => {
+      if (!meta) return;
+      const screenWidth = window.screen.width;
+      if (screenWidth > 0 && screenWidth < 1200) {
+        const scale = (screenWidth / 1200).toFixed(3);
+        meta.setAttribute("content", `width=1200, initial-scale=${scale}, minimum-scale=${scale}`);
+      }
+    };
+    applyViewportScale();
+    window.addEventListener("orientationchange", applyViewportScale);
+    return () => window.removeEventListener("orientationchange", applyViewportScale);
+  }, []);
+
+  useEffect(() => {
     // 스크롤 트리거: 30px 이상 스크롤 시 천체 애니메이션 활성화
     const handleScroll = () => setIsScrolled(window.scrollY > 30);
     handleScroll();

@@ -12,10 +12,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// 모바일 브라우저가 화면 배율을 올바르게 잡도록 명시 (확대는 접근성상 허용 유지)
+// 고정 설계폭 뷰포트: 폰·패드에서 데스크톱 구도를 그대로 비율 축소해 표시 (모양 유지, 확대 허용)
 export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
+  width: "1200",
 };
 
 export const metadata: Metadata = {
