@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, PointerEvent as ReactPointerEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 type Lang = "en" | "ko";
 type Section = "explore" | "learn" | "timeline" | "careers" | "resources";
@@ -146,6 +146,9 @@ const copy = {
       generic: "Something went wrong. Please try again.",
     } as Record<string, string>,
     synced: "Progress synced to your account",
+    expand: "Expand",
+    panelHint: "Drag to move · resize from the corner",
+    askedLabel: "Question",
   },
   ko: {
     tagline: "배우고 · 이해하고 · 미래를 준비하다",
@@ -210,6 +213,9 @@ const copy = {
       generic: "문제가 발생했습니다. 다시 시도해 주세요.",
     } as Record<string, string>,
     synced: "진행률이 계정에 저장됩니다",
+    expand: "크게 보기",
+    panelHint: "머리글을 끌어 이동 · 모서리를 끌어 크기 조절",
+    askedLabel: "질문",
   },
 };
 
@@ -274,7 +280,33 @@ export default function Home() {
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authName, setAuthName] = useState("");
+  // 확장 답변 패널: 기본은 화면 중앙, 사용자가 드래그로 이동·모서리로 크기 조절
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [panelPos, setPanelPos] = useState<{ x: number; y: number } | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // 패널 머리글 드래그로 이동 (버튼 클릭은 제외, 화면 밖으로 나가지 않게 제한)
+  function startPanelDrag(e: ReactPointerEvent<HTMLDivElement>) {
+    if ((e.target as HTMLElement).closest("button")) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+    e.preventDefault();
+    const rect = panel.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    function onMove(ev: PointerEvent) {
+      const x = Math.min(Math.max(ev.clientX - offsetX, 60 - rect.width), window.innerWidth - 60);
+      const y = Math.min(Math.max(ev.clientY - offsetY, 0), window.innerHeight - 50);
+      setPanelPos({ x, y });
+    }
+    function onUp() {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
 
   useEffect(() => {
     let localSteps: Record<string, boolean> = {};
@@ -424,6 +456,7 @@ export default function Home() {
       setCitations(data.citations ?? []);
       setCheckedAt(data.checkedAt ?? "");
       setUsedWeb(Boolean(data.usedWeb));
+      setPanelOpen(true);
       markStudied(selected.id, level);
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return;
@@ -436,6 +469,13 @@ export default function Home() {
   }
 
   function chooseQuestion(q: string) {
+    void submit(undefined, q);
+  }
+
+  // 학습·직무·자료 페이지 버튼에서 탐색 화면으로 이동해 AI 가이드에게 질문
+  function askFromPage(q: string) {
+    setSection("explore");
+    window.scrollTo({ top: 200, behavior: "smooth" });
     void submit(undefined, q);
   }
 
@@ -489,6 +529,28 @@ export default function Home() {
         </form>
       </div>}
 
+      {panelOpen && answer && <div
+        className="answer-panel glass-card"
+        ref={panelRef}
+        role="dialog"
+        aria-label={t.guide}
+        style={panelPos ? { left: panelPos.x, top: panelPos.y, transform: "none" } : undefined}
+      >
+        <div className="answer-panel-head" onPointerDown={startPanelDrag}>
+          <b>⌁ {t.guide}</b>
+          <span className={usedWeb ? "web-badge" : "kb-badge"}>{usedWeb ? `✓ ${t.webChecked}` : `✓ ${t.knowledgeChecked}`}</span>
+          <small className="panel-hint">{t.panelHint}</small>
+          <button type="button" aria-label={t.close} onClick={() => setPanelOpen(false)}>✕</button>
+        </div>
+        <div className="answer-panel-body">
+          {question && <p className="asked-question"><span>{t.askedLabel}</span>{question}</p>}
+          <MarkdownAnswer text={answer}/>
+          {checkedAt && <small className="panel-checked">{t.checked}: {new Date(checkedAt).toLocaleString(lang === "ko" ? "ko-KR" : "en-US")}</small>}
+          {citations.length > 0 && <div className="source-list"><strong>{t.sources}</strong>{citations.map((source, i) => <a href={source.url} target="_blank" rel="noreferrer" key={source.url}><span>{i + 1}</span><div><b>{source.title}</b><small>{new URL(source.url).hostname}</small></div><i>↗</i></a>)}</div>}
+        </div>
+        <span className="resize-corner" aria-hidden="true">⟓</span>
+      </div>}
+
       {activeContent === "explore" && <>
         <section className="hero-copy">
           <p>{t.eyebrow}</p>
@@ -520,8 +582,8 @@ export default function Home() {
               <div className="ask-actions"><button type="button" onClick={() => document.getElementById("topic-grid")?.scrollIntoView({behavior:"smooth"})}>⌘ {t.browse}</button><span>or</span><button type="button" onClick={() => chooseQuestion(t.guided[0])}>◇ {t.suggestion}</button></div>
               {loading && <div className="search-progress" role="status"><span className="search-spinner"/><b>{t.searching[loadingStep]}</b><button type="button" onClick={() => abortRef.current?.abort()}>{t.cancel}</button></div>}
               {askError && <div className="ask-error" role="alert"><span>!</span><p>{askError}</p><button type="button" onClick={() => void submit()}>{lang === "en" ? "Try again" : "다시 시도"}</button></div>}
-              {answer && <div className="answer-card live-answer" role="status">
-                <div className="answer-meta"><b>{t.answerIntro}</b><span className={usedWeb ? "web-badge" : "kb-badge"}>{usedWeb ? `✓ ${t.webChecked}` : `✓ ${t.knowledgeChecked}`}</span></div>
+              {answer && !panelOpen && <div className="answer-card live-answer" role="status">
+                <div className="answer-meta"><b>{t.answerIntro}</b><span className={usedWeb ? "web-badge" : "kb-badge"}>{usedWeb ? `✓ ${t.webChecked}` : `✓ ${t.knowledgeChecked}`}</span><button type="button" className="expand-button" onClick={() => setPanelOpen(true)}>⤢ {t.expand}</button></div>
                 <MarkdownAnswer text={answer}/>
                 {checkedAt && <small>{t.checked}: {new Date(checkedAt).toLocaleString(lang === "ko" ? "ko-KR" : "en-US")}</small>}
                 {citations.length > 0 && <div className="source-list"><strong>{t.sources}</strong>{citations.map((source, i) => <a href={source.url} target="_blank" rel="noreferrer" key={source.url}><span>{i + 1}</span><div><b>{source.title}</b><small>{new URL(source.url).hostname}</small></div><i>↗</i></a>)}</div>}
@@ -560,10 +622,10 @@ export default function Home() {
 
       {activeContent !== "explore" && <section className="content-page">
         <button className="back" onClick={() => setSection("explore")}>← {lang === "en" ? "Back to the universe" : "전체 지도로 돌아가기"}</button>
-        {activeContent === "learn" && <><div className="page-intro"><span>LEARNING PATHS</span><h1>{lang === "en" ? "Learn AI in the right order." : "AI를 올바른 순서로 배우세요."}</h1><p>{lang === "en" ? "A guided path from first principles to practical applications — at your pace." : "기초 원리부터 실제 활용까지, 나의 속도에 맞춘 단계형 학습 과정입니다."}</p></div><div className="learning-grid">{learningCards.map(c=><article key={c[0]}><span>{c[0]}</span><h2>{lang === "en" ? c[1] : c[2]}</h2><p>{lang === "en" ? c[3] : c[4]}</p><button>{lang === "en" ? "Start module" : "학습 시작"} →</button></article>)}</div></>}
+        {activeContent === "learn" && <><div className="page-intro"><span>LEARNING PATHS</span><h1>{lang === "en" ? "Learn AI in the right order." : "AI를 올바른 순서로 배우세요."}</h1><p>{lang === "en" ? "A guided path from first principles to practical applications — at your pace." : "기초 원리부터 실제 활용까지, 나의 속도에 맞춘 단계형 학습 과정입니다."}</p></div><div className="learning-grid">{learningCards.map(c=><article key={c[0]}><span>{c[0]}</span><h2>{lang === "en" ? c[1] : c[2]}</h2><p>{lang === "en" ? c[3] : c[4]}</p><button onClick={() => askFromPage(lang === "en" ? `I want to start the "${c[1]}" module. Give me a structured introduction and the first key concepts.` : `"${c[2]}" 모듈을 시작하고 싶어요. 전체 구성과 첫 핵심 개념을 알려 주세요.`)}>{lang === "en" ? "Start module" : "학습 시작"} →</button></article>)}</div></>}
         {activeContent === "timeline" && <><div className="page-intro"><span>PAST · PRESENT · FUTURE</span><h1>{lang === "en" ? "The story of artificial intelligence" : "인공지능이 걸어온 길"}</h1><p>{lang === "en" ? "Progress was never a straight line. Explore the breakthroughs, winters and turning points." : "AI의 발전은 직선이 아니었습니다. 도약과 침체, 중요한 전환점을 살펴보세요."}</p></div><div className="full-timeline">{timeline.map((e,i)=><article key={e[0]}><i/><time>{e[0]}</time><div><span>{i < 5 ? t.established : (lang === "en" ? "Evolving" : "변화 중")}</span><h2>{lang === "en" ? e[1] : e[2]}</h2></div></article>)}</div></>}
-        {activeContent === "careers" && <><div className="page-intro"><span>ROLES & CAREERS</span><h1>{lang === "en" ? "Find your place in the AI ecosystem." : "AI 생태계에서 나의 자리를 찾아보세요."}</h1><p>{lang === "en" ? "AI needs researchers, builders, communicators, designers and responsible decision-makers." : "AI에는 연구자·개발자·기획자·디자이너·책임 있는 의사결정자가 모두 필요합니다."}</p></div><div className="role-grid">{roles.map((r,i)=><article key={r[0]}><span>0{i+1}</span><h2>{lang === "en" ? r[0] : r[1]}</h2><p>{lang === "en" ? r[2] : r[3]}</p><button>{lang === "en" ? "Explore role" : "직무 알아보기"} →</button></article>)}</div></>}
-        {activeContent === "resources" && <><div className="page-intro"><span>TRUSTED STARTING POINTS</span><h1>{lang === "en" ? "Resources for deeper learning" : "더 깊은 학습을 위한 자료"}</h1><p>{lang === "en" ? "A structured index for concepts, practical skills and responsible AI." : "개념·실무 능력·책임 있는 AI를 위한 체계적인 자료 모음입니다."}</p></div><div className="resource-list">{[["AI Glossary","AI 용어사전","40+ connected foundational concepts","40개 이상의 핵심 개념"],["Practical Guides","실전 가이드","Prompting, RAG, agents and evaluation","프롬프팅·RAG·에이전트·평가"],["Safety & Ethics","안전과 윤리","Bias, privacy, copyright and governance","편향·개인정보·저작권·거버넌스"]].map((r,i)=><article key={r[0]}><span>{["Aa","⌘","◇"][i]}</span><div><h2>{lang === "en"?r[0]:r[1]}</h2><p>{lang === "en"?r[2]:r[3]}</p></div><button>→</button></article>)}</div></>}
+        {activeContent === "careers" && <><div className="page-intro"><span>ROLES & CAREERS</span><h1>{lang === "en" ? "Find your place in the AI ecosystem." : "AI 생태계에서 나의 자리를 찾아보세요."}</h1><p>{lang === "en" ? "AI needs researchers, builders, communicators, designers and responsible decision-makers." : "AI에는 연구자·개발자·기획자·디자이너·책임 있는 의사결정자가 모두 필요합니다."}</p></div><div className="role-grid">{roles.map((r,i)=><article key={r[0]}><span>0{i+1}</span><h2>{lang === "en" ? r[0] : r[1]}</h2><p>{lang === "en" ? r[2] : r[3]}</p><button onClick={() => askFromPage(lang === "en" ? `What does an ${r[0]} do? Explain the daily work, required skills and how to prepare for this role.` : `${r[1]}는 어떤 일을 하나요? 하는 일, 필요한 역량, 준비 방법을 알려 주세요.`)}>{lang === "en" ? "Explore role" : "직무 알아보기"} →</button></article>)}</div></>}
+        {activeContent === "resources" && <><div className="page-intro"><span>TRUSTED STARTING POINTS</span><h1>{lang === "en" ? "Resources for deeper learning" : "더 깊은 학습을 위한 자료"}</h1><p>{lang === "en" ? "A structured index for concepts, practical skills and responsible AI." : "개념·실무 능력·책임 있는 AI를 위한 체계적인 자료 모음입니다."}</p></div><div className="resource-list">{[["AI Glossary","AI 용어사전","40+ connected foundational concepts","40개 이상의 핵심 개념"],["Practical Guides","실전 가이드","Prompting, RAG, agents and evaluation","프롬프팅·RAG·에이전트·평가"],["Safety & Ethics","안전과 윤리","Bias, privacy, copyright and governance","편향·개인정보·저작권·거버넌스"]].map((r,i)=><article key={r[0]}><span>{["Aa","⌘","◇"][i]}</span><div><h2>{lang === "en"?r[0]:r[1]}</h2><p>{lang === "en"?r[2]:r[3]}</p></div><button aria-label={lang === "en" ? `Open ${r[0]}` : `${r[1]} 열기`} onClick={() => askFromPage(lang === "en" ? `Act as my "${r[0]}" resource: ${r[2]}. Give me a practical starting guide.` : `"${r[1]}" 자료가 되어 주세요: ${r[3]}. 실용적인 입문 안내를 해 주세요.`)}>→</button></article>)}</div></>}
       </section>}
 
       <footer><div className="brand-mark small">A<span>I</span></div><p>{t.footer}</p><span>AI Universe · 2026</span></footer>
