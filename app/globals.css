@@ -226,3 +226,9 @@ footer{position:relative;z-index:2;border-top:1px solid rgba(127,177,255,.13);mi
 .quest-answer{margin-top:.5rem;border-top:1px solid rgba(140,165,255,.15);padding-top:.85rem}
 .learning-grid article.active,.role-grid article.active{border-color:#59d6ff;box-shadow:0 0 18px rgba(94,168,255,.3)}
 @media (max-width:640px){.robot-guide-dashboard{flex-direction:column}.motion-toggle{width:32px;height:32px}}
+
+/* AI 가이드 카드 클릭 가능화 (누르면 질문창 오픈) */
+button.guide-card.clickable{width:100%;text-align:inherit;font:inherit;color:inherit;cursor:pointer;transition:border-color .25s,box-shadow .25s,transform .25s;display:flex;flex-direction:column}
+button.guide-card.clickable:hover{border-color:#59d6ff;box-shadow:0 0 22px rgba(94,168,255,.35);transform:translateY(-2px)}
+.guide-cta{margin-top:.7rem;font-size:.82rem;font-weight:700;color:#8fb7ff;transition:color .25s}
+button.guide-card.clickable:hover .guide-cta{color:#7ef0ff}

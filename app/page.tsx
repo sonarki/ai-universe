@@ -883,7 +883,7 @@ export default function Home() {
           </div>
 
           <aside className="guide-column">
-            <div className="guide-card glass-card"><div><span className="status-dot"/>{t.guide}<em>Beta</em></div><div className="bot"><span className="antenna a1"/><span className="antenna a2"/><b>⌁</b></div><p>{t.guideText}</p></div>
+            <button type="button" className="guide-card glass-card clickable" onClick={() => setAskOpen(true)} aria-label={t.question}><div><span className="status-dot"/>{t.guide}<em>Beta</em></div><div className="bot"><span className="antenna a1"/><span className="antenna a2"/><b>⌁</b></div><p>{t.guideText}</p><span className="guide-cta">✦ {t.askChip} →</span></button>
             <div className="trust-card glass-card"><span>✓</span><div><b>{lang === "en" ? "Evidence-aware" : "근거 중심 정보"}</b><p>{t.noNews}</p></div></div>
           </aside>
         </section>
